@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Druk Basket | Marketplace</title>
+    <script src="/auth.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+:root {
+            --primary-green: #2d6a4f;
+            --accent-gold: #f1c40f;
+            --earth-brown: #4a3728;
+            --light-bg: #f9fbf9;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            color: var(--earth-brown);
+        }
+
+        /* Header & Navigation */
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-supplier-btn {
+            background: var(--primary-green);
+            color: white !important;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 0 #1b4332; /* 3D effect for easier clicking */
+        }
+
+        .nav-supplier-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* Market Price Live Indicator */
+        .live-logo-container {
+            display: inline-flex;
+            align-items: center;
+            background: #fff5f5;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid #ff0000;
+        }
+
+        /* Filter Bar - Made Chunkier for Fingers */
+        .filter-bar {
+            background: #fff;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 2px solid #eee;
+        }
+
+        .filter-bar input, .filter-bar select {
+            padding: 12px;
+            font-size: 16px; /* Prevents iOS zoom-in */
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+
+        .search-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Product Cards */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .card:hover { transform: translateY(-5px); }
+
+        .price {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            margin: 10px 0;
+        }
+
+        /* Bigger, clearer buttons for farmers */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .add-cart { background: #e8f5e9; color: var(--primary-green); border: 1px solid var(--primary-green); }
+        .preorder { background: var(--earth-brown); color: white; }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            z-index: 1;
+        }
+        
+        /* High Contrast Badges */
+        .badge.organic { background: #2ecc71; color: white; }
+        .badge.gi-tag { background: #f1c40f; color: #000; }
+        .badge.gap { background: #3498db; color: white; }
+
+        @media (max-width: 600px) {
+            .filter-bar input, .filter-bar select { width: 100%; }
+            .navbar { justify-content: center; gap: 15px; }
+        }
+
+        /* Header Logo Styling */
+        .live-logo-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .recording-circle {
+            position: relative;
+            width: 20px;
+            height: 20px;
+            animation: simplePulse 1.5s infinite;
+        }
+
+        .inner-dot {
+            width: 12px;
+            height: 12px;
+            background: #ff0000;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+
+        .outer-ring {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ff0000;
+            border-radius: 50%;
+        }
+
+        @keyframes simplePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Ensure the grid looks good */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            display: none;
+        }
+
+        /* Style for empty search results */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        /* Badge colors for categories */
+        .badge.organic { background: #2ecc71; color: white; }
+        .badge.gi-tag { background: #f1c40f; color: black; }
+        .badge.gap { background: #3498db; color: white; }
+
+        /* NEW: Supplier Link Styling to match Nav */
+        .nav-supplier-btn {
+            background: #27ae60;
+            color: white !important;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* =========================
+           FARMER TALK BACK (NEW)
+           Right + Below (bottom-right)
+           ========================= */
+        .talkback-btn {
+            border: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            border-radius: 14px;
+            font-weight: 900;
+            background: #f5f5f5;
+            color: #222;
+            box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+            font-size: 16px;
+        }
+        .talkback-btn.on {
+            background: var(--primary-green);
+            color: white;
+        }
+        .talkback-btn:active { transform: translateY(1px); box-shadow: none; }
+
+        .talkback-float {
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            z-index: 9999;
+        }
+
+        @supports (padding: env(safe-area-inset-bottom)) {
+            .talkback-float {
+                bottom: calc(16px + env(safe-area-inset-bottom));
+                right: calc(16px + env(safe-area-inset-right));
+            }
+        }
+
+        /* small toast (optional feedback) */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 9999;
+            display: none;
+            max-width: 92vw;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+        </div>
+        <nav>
+            <a href="/supplierIndex.html">Marketplace</a>
+            <a href="/aboutUs.html">About Us</a>
+            <a href="/contactUs.html">Contact Us</a>
+            <a href="/supplier-portal.html" class="nav-supplier-btn">Supplier Portal</a>
+        </nav>
+
+        <div class="user-actions">
+            <a href="/market-prices.html" style="text-decoration: none;">
+                <div class="live-logo-container">
+                    <span class="market-price">View Current Market Prices</span>
+                    <div class="recording-circle">
+                        <div class="inner-dot"></div>
+                        <div class="outer-ring"></div>
+                    </div>
+                </div>
+            </a>
+            <a href="Dzongkha/index.html" style="text-decoration: none;">EN</a>
+
+            <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;"
+                onclick="window.location.href='/Addtocart/addToCart.html'">
+                <span class="cart" style="font-size: 1.5rem;">🛒</span>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+
+            <span class="notification">🔔</span>
+            <a href="/login.html" class="login-btn-link">
+                <button class="login-btn">LOG IN</button>
+            </a>
+        </div>
+    </header>
+
+    <section class="filter-bar">
+        <input type="text" id="productSearch" placeholder="Search by keyword (e.g. Chilli, Rice)">
+        <select id="categoryFilter">
+            <option value="all">Select Category</option>
+            <option value="Organic">Certified Organic Product</option>
+            <option value="GI Tag">GI Tag Product</option>
+            <option value="GAP">GAP Product</option>
+        </select>
+        <button class="search-btn">🔍</button>
+    </section>
+
+    <main class="product-grid" id="product-grid"></main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- TALK BACK ON RIGHT + BELOW (bottom-right) -->
+    <button id="talkbackToggle" class="talkback-btn talkback-float" type="button" title="Talk Back for farmers">
+        🔈 Talk Back: OFF
+    </button>
+
+    <script>
+        // ... (Keep your original products array exactly as it was)
+        const products = [
+            { name: "Red Onion", price: "60", unit: "Kg", badge: "GAP", img: "Images/red-onion.jpg" },
+            { name: "Local Potato", price: "45", unit: "Kg", badge: "GI Tag", img: "Images/local-potato.jpg" },
+            { name: "Pure Wild Honey", price: "850", unit: "500ml", badge: "GI Tag", img: "Images/red-raddish.jpg" },
+            { name: "Organic Green Chilli", price: "120", unit: "Kg", badge: "Organic", img: "Images/green-chilli.jpg" },
+            { name: "Red Rice (Premium)", price: "1200", unit: "25Kg", badge: "GI Tag", img: "Images/Red Rice (Premium).jpg" },
+            { name: "Fresh Cow Butter", price: "550", unit: "Kg", badge: "GAP", img: "Images/cow-butter.jpg" },
+            { name: "Sweet Carrots", price: "70", unit: "Kg", badge: "Organic", img: "Images/Sweet Carrots.jpg" },
+            { name: "Yak Cheese (Chugo)", price: "150", unit: "Pkt", badge: "GI Tag", img: "Images/Yak Cheese (Chugo).jpg" },
+            { name: "Dried Beef (Sukam)", price: "1400", unit: "Kg", badge: "GAP", img: "Images/dried-beef.jpg" },
+            { name: "Cordyceps Tea", price: "1800", unit: "Box", badge: "Organic", img: "Images/Cordyceps Tea.jpg" },
+            { name: "King Chilli (Dalle)", price: "350", unit: "Kg", badge: "Organic", img: "Images/chilli-dale.jpg" },
+            { name: "Local Ginger", price: "90", unit: "Kg", badge: "GAP", img: "Images/Local Ginger.jpg" },
+            { name: "Doma (Areca Nut)", price: "60", unit: "Pon", badge: "GI Tag", img: "Images/doma.jpg" },
+            { name: "Asparagus", price: "150", unit: "Bundle", badge: "Organic", img: "Images/Asparagus.jpg" },
+            { name: "Walnuts", price: "450", unit: "Kg", badge: "GAP", img: "Images/Walnuts.jpg" },
+            { name: "Apple Juice", price: "120", unit: "Bottle", badge: "GI Tag", img: "https://images.unsplash.com/photo-1613478223719-2ab80260f423?w=300" },
+            { name: "Oyster Mushroom", price: "250", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1504675099198-7023dd85f5a3?w=300" },
+            { name: "Cardamom", price: "1100", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1599940778173-e276d4acb2bb?w=300" },
+            { name: "Buckwheat Flour", price: "160", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1616128608832-613d9426f0bc?w=300" },
+            { name: "Local Garlic", price: "220", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=300" },
+            { name: "Broccoli", price: "85", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1459411621453-7b03977f4bef?w=300" },
+            { name: "Free-Range Eggs", price: "480", unit: "Tray", badge: "Organic", img: "https://images.unsplash.com/photo-1587486914762-8f55fb59580b?w=300" },
+            { name: "Mustard Oil", price: "240", unit: "Ltr", badge: "GI Tag", img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=300" },
+            { name: "Pumpkin", price: "40", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1506510232441-9983fcd68b10?w=300" },
+            { name: "Cauliflower", price: "75", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?w=300" },
+            { name: "Red Radish", price: "30", unit: "Kg", badge: "GI Tag", img: "Images/red-raddish.jpg" },
+            { name: "Cabbage", price: "35", unit: "Kg", badge: "GAP", img: "Images/cabbage.jpg" },
+            { name: "Spinach", price: "40", unit: "Bundle", badge: "Organic", img: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300" },
+            { name: "Turnip", price: "25", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1506806732259-39c2d4ad310c?w=300" },
+            { name: "Maize Rice (Kharang)", price: "90", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1551462147-37885acc3c44?w=300" },
+            { name: "Local Peaches", price: "180", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1629999050803-3bc55c321740?w=300" },
+            { name: "Pear", price: "220", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1514756331096-242f3900faff?w=300" },
+            { name: "Persimmon", price: "250", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1601372517861-5544778f566f?w=300" },
+            { name: "Cucumber", price: "50", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1449339044511-d14d2ba8294b?w=300" },
+            { name: "Eggplant", price: "60", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1528137858148-d0180c57118d?w=300" },
+            { name: "Zucchini", price: "80", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1592924357228-91a4dadbe7c5?w=300" },
+            { name: "Beetroot", price: "70", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1444731961956-751ed90465a5?w=300" },
+            { name: "Soybean", price: "110", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1582515073490-39981397c445?w=300" },
+            { name: "Dried Chilli", price: "450", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1514537022378-5a21034f8101?w=300" },
+            { name: "Bamboo Shoot", price: "150", unit: "Jar", badge: "Organic", img: "https://images.unsplash.com/photo-1596515298514-638069678122?w=300" },
+            { name: "Fern (Nakay)", price: "60", unit: "Bundle", badge: "GI Tag", img: "https://images.unsplash.com/photo-1492496913980-50134c7a268a?w=300" },
+            { name: "Lemon", price: "5", unit: "Pc", badge: "GAP", img: "https://images.unsplash.com/photo-1590502593747-42a996133562?w=300" },
+            { name: "Banana", price: "120", unit: "Doz", badge: "Organic", img: "https://images.unsplash.com/photo-1571771894821-ad9902410947?w=300" },
+            { name: "Orange", price: "200", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=300" },
+            { name: "Curd (Datshi)", price: "180", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1559561853-08451507cbe7?w=300" },
+            { name: "Tumeric Powder", price: "100", unit: "Pkt", badge: "Organic", img: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=300" },
+            { name: "Coriander", price: "20", unit: "Bundle", badge: "GI Tag", img: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=300" },
+            { name: "Mint Leaves", price: "30", unit: "Bundle", badge: "GAP", img: "Images/mint.jpg" },
+            { name: "Dried Bitter Gourd", price: "300", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1449339044511-d14d2ba8294b?w=300" },
+            { name: "Cinnamon Sticks", price: "150", unit: "Pkt", badge: "GI Tag", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300" }
+        ];
+ 
+        const grid = document.getElementById('product-grid');
+        const searchInput = document.getElementById('productSearch');
+        const categoryFilter = document.getElementById('categoryFilter');
+
+        /* =========================
+           FARMER TALK BACK (NEW)
+           ========================= */
+        const talkBtn = document.getElementById('talkbackToggle');
+        const toast = document.getElementById('toast');
+        let talkEnabled = localStorage.getItem('talkBackEnabled') === '1';
+
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(() => toast.style.display = 'none', 1600);
+        }
+
+        function setTalkUI() {
+            if (talkEnabled) talkBtn.classList.add('on');
+            else talkBtn.classList.remove('on');
+            talkBtn.innerText = talkEnabled ? "🔊 Talk Back: ON" : "🔈 Talk Back: OFF";
+        }
+
+        function stopTalking() {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function speak(text) {
+            if (!talkEnabled) return;
+            if (!('speechSynthesis' in window)) {
+                alert("Talk Back is not supported on this device/browser.");
+                talkEnabled = false;
+                localStorage.setItem('talkBackEnabled', '0');
+                setTalkUI();
+                return;
+            }
+            stopTalking();
+            const u = new SpeechSynthesisUtterance(text);
+            u.rate = 0.95;
+            u.pitch = 1;
+            u.volume = 1;
+            window.speechSynthesis.speak(u);
+        }
+
+        function buildFarmerTalk(p) {
+            const n = (p.name || "").toString();
+            const b = (p.badge || "").toString();
+            const priceText = `Nu ${p.price} per ${p.unit}`;
+
+            let badgeText = "";
+            if (b.toLowerCase() === "organic") badgeText = "Certified Organic. No chemical.";
+            else if (b.toLowerCase() === "gi tag") badgeText = "GI Tag. Local authentic product.";
+            else if (b.toLowerCase() === "gap") badgeText = "GAP. Good farming practice.";
+            else if (b) badgeText = `${b}.`;
+
+            return `${n}. Price ${priceText}. ${badgeText} If you want to buy, press Add to Cart.`;
+        }
+
+        function talkWelcome() {
+            speak("Kuzu zangpo Gara lu. Welcome to Druk Basket. Type key word in search area. Or choose category. Tap product to hear price. Press Add to Cart to buy. Press Preorder to advance demand the product");
+        }
+
+        talkBtn.addEventListener('click', () => {
+            talkEnabled = !talkEnabled;
+            localStorage.setItem('talkBackEnabled', talkEnabled ? '1' : '0');
+            setTalkUI();
+            showToast(talkEnabled ? "Talk Back ON" : "Talk Back OFF");
+            if (talkEnabled) talkWelcome();
+            else stopTalking();
+        });
+
+        setTalkUI();
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateDisplay() {
+            const searchText = searchInput.value.toLowerCase();
+            const selectedCat = categoryFilter.value;
+            const filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchText);
+                const matchesCategory = (selectedCat === "all") || (p.badge === selectedCat);
+                return matchesSearch && matchesCategory;
+            });
+            renderGrid(filtered);
+
+            if (talkEnabled) {
+                const catText = selectedCat === "all" ? "all categories" : selectedCat;
+                speak(`Showing ${filtered.length} products for ${catText}.`);
+            }
+        }
+
+        function renderGrid(data) {
+            grid.innerHTML = "";
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="no-results">No products found matching your criteria.</div>`;
+                if (talkEnabled) speak("No products found. Please clear search or choose different category.");
+                return;
+            }
+
+            grid.innerHTML = data.map(p => {
+                const params = new URLSearchParams({
+                    name: p.name,
+                    price: p.price,
+                    unit: p.unit,
+                    img: p.img,
+                    badge: p.badge || ""
+                }).toString();
+
+                const safeBadge = (p.badge || "").toLowerCase().replace(' ', '-');
+
+                return `
+                    <div class="card"
+                         data-name="${String(p.name).replace(/"/g, '&quot;')}"
+                         data-price="${p.price}"
+                         data-unit="${p.unit}"
+                         data-badge="${String(p.badge || "").replace(/"/g, '&quot;')}"
+                         tabindex="0"
+                         role="button"
+                         aria-label="Product ${p.name}">
+                        <a href="Product/product.html?${params}" class="product-link" style="text-decoration: none;">
+                            ${p.badge ? `<span class="badge ${safeBadge}">${p.badge}</span>` : ''}
+                            <img src="${p.img}" alt="${p.name}">
+                            <div class="card-content">
+                                <h3>${p.name}</h3>
+                                <p class="price">Nu. ${p.price} /${p.unit}</p>
+                            </div>
+                        </a>
+                        <div class="card-content no-top">
+                            <div class="btn-group">
+                                <button class="add-cart" onclick="addToCart('${p.name}', '${p.price}', '${p.unit}', '${p.img}', '${p.badge}')">ADD TO CART</button>
+                                <button class="preorder" onclick="window.location.href='/Preorder/preorder.html'">PREORDER</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            attachCardTalkBackHandlers();
+        }
+
+        function attachCardTalkBackHandlers() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const price = card.getAttribute('data-price');
+                const unit = card.getAttribute('data-unit');
+                const badge = card.getAttribute('data-badge') || "";
+
+                const message = buildFarmerTalk({ name, price, unit, badge });
+
+                card.addEventListener('click', (e) => {
+                    const btn = e.target.closest('button');
+                    if (btn) return; // buttons handled separately
+                    speak(message);
+                });
+
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        speak(message);
+                    }
+                });
+            });
+        }
+
+        searchInput.addEventListener('input', updateDisplay);
+        categoryFilter.addEventListener('change', updateDisplay);
+
+        function updateBadge() {
+            const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            const cartBadge = document.getElementById('cart-count');
+            if (cartBadge) {
+                cartBadge.innerText = cart.length;
+                cartBadge.style.display = cart.length > 0 ? 'block' : 'none';
+            }
+        }
+
+        function addToCart(name, price, unit, img, badge) {
+            let cartItems = JSON.parse(localStorage.getItem('drukCart')) || [];
+            const existingItem = cartItems.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cartItems.push({
+                    name, price, img, unit,
+                    badge: badge || "Organic",
+                    qty: 1,
+                    selected: true,
+                    timestamp: Date.now()
+                });
+            }
+            localStorage.setItem('drukCart', JSON.stringify(cartItems));
+            updateBadge();
+            processCheckoutSimulation();
+
+            showToast(`${name} added to cart`);
+            speak(`${name} added to cart. Price Nu ${price} per ${unit}. Open cart from top to checkout.`);
+        }
+
+        function processCheckoutSimulation() {
+            const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            const orders = JSON.parse(localStorage.getItem('pendingOrders')) || [];
+            const newOrders = cart.map(item => ({ ...item, timestamp: Date.now() }));
+            localStorage.setItem('pendingOrders', JSON.stringify([...orders, ...newOrders]));
+        }
+
+        function loadApprovedProducts() {
+            const approvedProducts = JSON.parse(localStorage.getItem('approvedFarmerProducts')) || [];
+            approvedProducts.forEach(ap => {
+                if(!products.find(p => p.name === ap.name)) {
+                    products.push({
+                        name: ap.name,
+                        price: ap.price,
+                        unit: ap.unit,
+                        badge: ap.badge || "Organic",
+                        img: ap.img
+                    });
+                }
+            });
+        }
+
+        loadApprovedProducts(); 
+        shuffleArray(products); 
+        updateDisplay(); 
+        updateBadge();
+
+        // Optional: say welcome on load if already enabled
+        if (talkEnabled) setTimeout(talkWelcome, 600);
+    </script>
+</body>
+</html>

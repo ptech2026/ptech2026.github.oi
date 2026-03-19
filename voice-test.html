@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GI Product Verification | DrukBasket</title>
+
+  <style>
+    :root{
+      --bg:#f6f7f8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --shadow:0 18px 45px rgba(0,0,0,.10);
+      --ok:#0a7d3b;
+      --bad:#c0392b;
+      --pill:#eef2f7;
+      --border:#e6e8ee;
+      --title:#111827;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color:#111;
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 18px auto;
+      padding: 0 14px;
+    }
+
+    .card{
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+      border: 1px solid var(--border);
+    }
+
+    .statusline{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 800;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .statusline.ok{ color: var(--ok); }
+    .statusline.bad{ color: var(--bad); }
+
+    h1{
+      margin: 0 0 10px;
+      font-size: 36px;
+      line-height: 1.15;
+      color: var(--title);
+    }
+
+    .sub{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background: var(--ok);
+      color:#fff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 760px){
+      h1{font-size: 28px;}
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .box{
+      background: #f3f5f7;
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      min-height: 138px;
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 150px 1fr;
+      gap: 8px 12px;
+      font-size: 16px;
+    }
+    .k{
+      font-weight: 800;
+      color:#111827;
+    }
+    .v{
+      color:#111827;
+      word-break: break-word;
+    }
+    .v.muted{ color: var(--muted); }
+
+    h2{
+      margin: 18px 0 8px;
+      font-size: 26px;
+      color: var(--title);
+    }
+
+    ol{
+      margin: 6px 0 0 18px;
+      padding: 0;
+    }
+    li{
+      margin: 8px 0;
+      line-height: 1.4;
+    }
+    .note{ color: var(--muted); }
+
+    .footerhint{
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--pill);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tiny{
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .btnrow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    button{
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 700;
+      cursor:pointer;
+    }
+    button:hover{ filter: brightness(.98); }
+    .primary{
+      border-color: transparent;
+      background: #111827;
+      color:#fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div id="status" class="statusline bad">Not verified ❌</div>
+
+      <h1 id="title">GI Product Verification</h1>
+      <p id="sub" class="sub">Scan result for GI-tagged product batch.</p>
+
+      <div id="badge" class="badge" style="display:none;">GI Tag</div>
+
+      <div class="grid">
+        <div class="box">
+          <div class="kv">
+            <div class="k">Certificate No:</div><div class="v" id="cert">—</div>
+            <div class="k">Batch ID:</div><div class="v" id="batch">—</div>
+            <div class="k">Farmer/Group:</div><div class="v" id="farmer">—</div>
+            <div class="k">Origin:</div><div class="v" id="origin">—</div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="kv">
+            <div class="k">Harvest:</div><div class="v" id="harvest">—</div>
+            <div class="k">Processing:</div><div class="v" id="processing">—</div>
+            <div class="k">Location:</div><div class="v" id="loc">—</div>
+            <div class="k">Status:</div><div class="v" id="batchStatus">—</div>
+          </div>
+          <div class="tiny">(You can embed a real map here later.)</div>
+        </div>
+      </div>
+
+      <h2>Traceability Timeline</h2>
+      <ol id="timeline"></ol>
+
+      <div class="footerhint">
+        Tip: Your QR can open a URL like <b>/gi/areca-nut/BH-GI-2026-00091</b>
+        or <b>/gi/areca-nut?batch=BH-GI-2026-00091</b>.
+      </div>
+
+      <div class="btnrow">
+        <button class="primary" onclick="location.reload()">Reload</button>
+        <button onclick="copyDebug()">Copy Debug Info</button>
+      </div>
+
+      <div class="tiny" id="debug"></div>
+    </div>
+  </div>
+
+<script>
+  /**
+   * ✅ CONFIG: Set this if your API is on a different domain/port.
+   * If your frontend + backend are same origin, keep it "".
+   *
+   * Examples:
+   *   const API_BASE = "";
+   *   const API_BASE = "http://localhost:3000";
+   *   const API_BASE = "https://api.drukbasket.bt";
+   */
+  const API_BASE = "";
+
+  /**
+   * Robust batchId extraction:
+   * 1) ?batch=BH-GI-... (recommended)
+   * 2) ?batchId=...
+   * 3) /gi/<product>/<batchId>  (uses last path segment)
+   */
+  function getBatchId() {
+    const url = new URL(window.location.href);
+
+    let batchId = url.searchParams.get("batch") || url.searchParams.get("batchId");
+    if (batchId) return batchId.trim();
+
+    const parts = url.pathname.split("/").filter(Boolean);
+    // Expect /gi/<productSlug>/<batchId> but we safely pick the last segment:
+    if (parts.length >= 2) return parts[parts.length - 1].trim();
+
+    return "";
+  }
+
+  // Optional: show product slug if present in /gi/<productSlug>/...
+  function getProductSlug() {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    // /gi/<productSlug>/<batchId>
+    if (parts.length >= 3 && parts[0].toLowerCase() === "gi") return parts[1];
+    return "";
+  }
+
+  function setNotVerified(message) {
+    document.getElementById("status").className = "statusline bad";
+    document.getElementById("status").textContent = "Not verified ❌";
+    document.getElementById("title").textContent = "GI Product Verification Failed";
+    document.getElementById("sub").textContent = message || "This QR/batch is not found in the GI registry.";
+    document.getElementById("badge").style.display = "none";
+    document.getElementById("timeline").innerHTML = "";
+    // Keep the boxes (so layout remains same), but clear values:
+    ["cert","batch","farmer","origin","harvest","processing","loc","batchStatus"].forEach(id=>{
+      document.getElementById(id).textContent = "—";
+    });
+  }
+
+  function setVerified(data) {
+    document.getElementById("status").className = "statusline ok";
+    document.getElementById("status").textContent = "Verified ✅";
+    document.getElementById("title").textContent = data.productName || "GI Product";
+    document.getElementById("sub").textContent = "This product batch is verified in the GI registry.";
+
+    const badge = document.getElementById("badge");
+    badge.style.display = "inline-flex";
+    badge.textContent = data.giBadge || "GI Tag";
+
+    document.getElementById("cert").textContent = data.certificateNo || "—";
+    document.getElementById("batch").textContent = data.batchId || "—";
+    document.getElementById("farmer").textContent = data.farmer || "—";
+    document.getElementById("origin").textContent = data.origin || "—";
+    document.getElementById("harvest").textContent = data.harvestDate || "—";
+    document.getElementById("processing").textContent = data.processingDate || "—";
+
+    if (data.location && typeof data.location.lat !== "undefined" && typeof data.location.lng !== "undefined") {
+      document.getElementById("loc").textContent = `${data.location.lat}, ${data.location.lng}`;
+    } else {
+      document.getElementById("loc").textContent = "—";
+    }
+
+    document.getElementById("batchStatus").textContent = data.status || "VERIFIED";
+
+    const ol = document.getElementById("timeline");
+    ol.innerHTML = "";
+    (data.timeline || []).forEach(x => {
+      const li = document.createElement("li");
+      li.innerHTML = `<b>${x.step || "Step"}:</b> <span class="note">${x.note || ""}</span>`;
+      ol.appendChild(li);
+    });
+  }
+
+  function setDebugInfo(batchId, apiUrl, extra) {
+    const productSlug = getProductSlug();
+    const dbg = {
+      opened_url: window.location.href,
+      product_slug: productSlug || null,
+      extracted_batch_id: batchId || null,
+      api_url_called: apiUrl || null,
+      note: extra || null
+    };
+    document.getElementById("debug").textContent = "Debug: " + JSON.stringify(dbg, null, 2);
+    window.__GI_DEBUG__ = dbg;
+  }
+
+  async function load() {
+    const batchId = getBatchId();
+
+    if (!batchId) {
+      const msg =
+        "Batch ID not detected from URL. Use /gi/<product>/<batchId> OR /gi/<product>?batch=<batchId>.";
+      setNotVerified(msg);
+      setDebugInfo(batchId, null, "No batchId extracted");
+      return;
+    }
+
+    const apiUrl = `${API_BASE}/api/gi/batches/${encodeURIComponent(batchId)}`;
+    setDebugInfo(batchId, apiUrl, "Fetching batch details...");
+
+    try {
+      const res = await fetch(apiUrl, { method: "GET" });
+
+      // If backend returns 404, show Not verified.
+      if (!res.ok) {
+        const msg =
+          res.status === 404
+            ? "This QR/batch is not found in the GI registry."
+            : `Verification API error (HTTP ${res.status}).`;
+        setNotVerified(msg);
+        setDebugInfo(batchId, apiUrl, `HTTP ${res.status}`);
+        return;
+      }
+
+      const payload = await res.json();
+
+      // Accept either {ok:true,data:{...}} OR direct object
+      const data = payload && payload.data ? payload.data : payload;
+
+      // Basic sanity check
+      if (!data || !data.batchId) {
+        setNotVerified("Invalid response from verification service.");
+        setDebugInfo(batchId, apiUrl, "Response missing batchId");
+        return;
+      }
+
+      setVerified(data);
+      setDebugInfo(batchId, apiUrl, "Verified OK");
+    } catch (e) {
+      setNotVerified("Could not connect to verification service. Check API_BASE and server status.");
+      setDebugInfo(batchId, `${API_BASE}/api/gi/batches/<batchId>`, String(e));
+    }
+  }
+
+  function copyDebug() {
+    const txt = JSON.stringify(window.__GI_DEBUG__ || {}, null, 2);
+    navigator.clipboard.writeText(txt).then(() => {
+      alert("Debug info copied!");
+    }).catch(() => {
+      alert("Copy failed. Please copy manually from the Debug section.");
+    });
+  }
+
+  load();
+</script>
+</body>
+</html>

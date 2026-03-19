@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style.css">
+  <title>Our Team</title>
+  <style>
+    :root{
+      --bg:#f4f6f6; --card:#fff; --text:#1f2a2e; --muted:#6b7b83;
+      --border:rgba(0,0,0,.06); --shadow:0 12px 30px rgba(16,24,40,.08);
+      --radius:14px;
+      --nav-bg:#fbf7ef; --nav-border:rgba(0,0,0,.08);
+      --nav-active-bg:#dfeee2; --nav-active-text:#0b6b2e;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .nav-wrap{background:var(--nav-bg);border-bottom:1px solid var(--nav-border);position:sticky;top:0;z-index:10}
+    .nav{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:16px}
+    .nav-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .brand{font-weight:800;letter-spacing:.2px;margin-right:8px;color:#183028}
+    .nav a{text-decoration:none;color:#2a2a2a;padding:10px 18px;border-radius:12px;font-weight:600;transition:background .15s ease}
+    .nav a:hover{background:rgba(0,0,0,.04)}
+    .nav a.active{background:var(--nav-active-bg);color:var(--nav-active-text)}
+    .container{max-width:1180px;margin:26px auto;padding:0 18px 30px}
+    h1{margin:0 0 14px;font-size:36px}
+    .sub{color:var(--muted);font-weight:600;margin-bottom:18px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .avatar{width:54px;height:54px;border-radius:16px;background:#e9efe8;display:flex;align-items:center;justify-content:center;font-weight:900}
+    .name{font-weight:900;font-size:18px;margin:10px 0 4px}
+    .role{color:var(--muted);font-weight:700}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .chip{font-size:12px;font-weight:800;background:#f2f5f6;border:1px solid var(--border);padding:6px 10px;border-radius:999px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-container">
+        <img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+      </div>
+
+      <div class="nav-left">
+        <a class="active" href="home.html">Home</a>
+        <a href="team.html">Our Team</a>
+        <a href="news.html">News</a>
+        <a href="stories.html">Stories</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div class="nav-right">
+        <a href="staff.html">Staff Area</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Our Team</h1>
+    <div class="sub">Meet the people behind the platform. (Replace names/roles anytime.)</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="name">Project Lead / Project Manager</div>
+        <div class="role">Tshering Yenten</div>
+        <div class="role">GAES</div>
+      </div>
+      <div class="card">
+        <div class="name">Finance Officer</div>
+        <div class="role">Yangden</div>
+        <div class="role">Procurement Officer</div>
+      </div>
+      <div class="card">
+        <div class="name">Procument Officer</div>
+        <div class="role">Tenzin Wangmo</div>
+        <div class="role">ARO</div>
+      </div>
+      <div class="card">
+        <div class="name">Research Officer</div>
+        <div class="role">Sonam Wangchuk</div>
+        <div class="role">ARO</div>
+      </div>
+      <div class="card">
+        <div class="name">Research Officer</div>
+        <div class="role">Tshering Nidup</div>
+        <div class="role">ADM</div>
+      </div>
+      <div class="card">
+        <div class="name">Marketing Officer</div>
+        <div class="role">Ugyen Wangdi</div>
+        <div class="role">ADM</div>
+      </div>
+      <div class="card">
+        <div class="name">Marketing Officer</div>
+        <div class="role">Sonam Kalden Choden</div>
+        <div class="role">ARO</div>
+      </div>
+      <div class="card">
+        <div class="name">Research Officer</div>
+        <div class="role">Hemlal Pulami</div>
+        <div class="role">GAES</div>
+      </div>
+      <div class="card">
+        <div class="name">IT Officer</div>
+        <div class="role">Pema Namgay</div>
+        <div class="role">ICTO</div>
+      </div>
+     
+    </div>
+  </div>
+</body>
+</html>

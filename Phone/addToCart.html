@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cart | Druk Basket</title>
+    <style>
+        :root {
+            --primary-red: #ff5e5e;
+            --soft-bg: #fdfaf6;
+            --text-dark: #333;
+            --border-color: #eee;
+        }
+
+        body {
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, system-ui, sans-serif;
+        }
+
+        /* PHONE FRAME */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: var(--soft-bg);
+            border: 12px solid #000;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .app-header {
+            background: #fff;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .screen {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 180px; /* Space for sticky summary */
+        }
+
+        h1 { font-size: 1.4rem; margin-bottom: 5px; color: var(--text-dark); }
+        .cart-subtitle { font-size: 0.85rem; color: #888; margin-bottom: 20px; }
+
+        /* CART CARD ITEM */
+        .cart-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .cart-card.disabled {
+            opacity: 0.6;
+            background: #fafafa;
+        }
+
+        .cart-card.selected {
+            border-color: var(--primary-red);
+        }
+
+        .item-checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary-red);
+        }
+
+        .prod-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .item-details { flex: 1; }
+        .item-name { font-weight: 700; font-size: 1rem; color: var(--text-dark); display: block; }
+        .item-price { color: var(--primary-red); font-weight: bold; font-size: 0.9rem; }
+
+        /* QUANTITY CONTROLS */
+        .qty-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .qty-stepper {
+            display: flex;
+            align-items: center;
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 2px;
+        }
+
+        .qty-btn {
+            background: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .qty-val {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .trash-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* STICKY FOOTER SUMMARY */
+        .sticky-summary {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: #fff;
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 25px 25px 0 0;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.05);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .checkout-btn {
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(255, 94, 94, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <header class="app-header">
+        <a href="/Phone/index.html"><img src="/Images/logo.png" alt="Logo" style="height: 25px;"></a>
+        <span style="font-weight: 900; color: #ff5e5e;">LIVE 🔴</span>
+    </header>
+
+    <div class="screen" id="cart-screen">
+        <h1>Your Cart</h1>
+        <p class="cart-subtitle">Select items to proceed to checkout.</p>
+        
+        <div id="cart-list">
+            </div>
+    </div>
+
+    <div class="sticky-summary">
+        <div class="summary-row">
+            <span style="color: #888;">Selected Items</span>
+            <span id="selected-count" style="font-weight: 800;">0</span>
+        </div>
+        <div class="summary-row">
+            <span style="font-weight: 700;">Subtotal</span>
+            <span id="total-price" style="font-weight: 800; color: var(--primary-red); font-size: 1.2rem;">Nu. 0</span>
+        </div>
+        <button class="checkout-btn" onclick="handleCheckout()">CHECKOUT NOW</button>
+    </div>
+</div>
+
+<script>
+    function displayCart() {
+        const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+        const container = document.getElementById('cart-list');
+        const selectedCount = document.getElementById('selected-count');
+        const totalPrice = document.getElementById('total-price');
+
+        if (cart.length === 0) {
+            container.innerHTML = `<div class="empty-state"><h3>🛒 Cart is Empty</h3><p>Go back to market to add items.</p></div>`;
+            selectedCount.innerText = "0";
+            totalPrice.innerText = "Nu. 0";
+            return;
+        }
+
+        container.innerHTML = cart.map((item, index) => `
+            <div class="cart-card ${item.selected ? 'selected' : 'disabled'}">
+                <input type="checkbox" class="item-checkbox" ${item.selected ? 'checked' : ''} onchange="toggleSelect(${index})">
+                <img src="${item.img}" class="prod-img">
+                <div class="item-details">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-price">Nu. ${item.price} / ${item.unit}</span>
+                    <div class="qty-row">
+                        <div class="qty-stepper">
+                            <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                            <span class="qty-val">${item.qty}</span>
+                            <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                        </div>
+                        <button class="trash-btn" onclick="removeItem(${index})">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        const selectedItems = cart.filter(i => i.selected);
+        const total = selectedItems.reduce((sum, i) => sum + (parseFloat(i.price) * i.qty), 0);
+        
+        selectedCount.innerText = selectedItems.length;
+        totalPrice.innerText = `Nu. ${total}`;
+    }
+
+    window.toggleSelect = (index) => {
+        let cart = JSON.parse(localStorage.getItem('drukCart'));
+        cart[index].selected = !cart[index].selected;
+        localStorage.setItem('drukCart', JSON.stringify(cart));
+        displayCart();
+    };
+
+    window.changeQty = (index, delta) => {
+        let cart = JSON.parse(localStorage.getItem('drukCart'));
+        cart[index].qty = Math.max(1, (cart[index].qty || 1) + delta);
+        localStorage.setItem('drukCart', JSON.stringify(cart));
+        displayCart();
+    };
+
+    window.removeItem = (index) => {
+        let cart = JSON.parse(localStorage.getItem('drukCart'));
+        cart.splice(index, 1);
+        localStorage.setItem('drukCart', JSON.stringify(cart));
+        displayCart();
+    };
+
+    function handleCheckout() {
+        const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+        const selected = cart.filter(i => i.selected);
+        
+        if (selected.length === 0) {
+            alert("Select items first!");
+            return;
+        }
+        
+        // Save selected total and proceed
+        const total = selected.reduce((sum, i) => sum + (parseFloat(i.price) * i.qty), 0);
+        localStorage.setItem('tempTotalPayable', total + 75); // Nu. 75 Delivery
+        window.location.href = '/Phone/checkout.html';
+    }
+
+    displayCart();
+</script>
+
+</body>
+</html>

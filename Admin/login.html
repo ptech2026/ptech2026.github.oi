@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Drukbasket</title>
+    <link rel="stylesheet" href="/style.css"> 
+    <style>
+        /* Existing Styles */
+        .live-logo-container { display: inline-flex; align-items: center; gap: 4px; }
+        .recording-circle { position: relative; width: 20px; height: 20px; animation: simplePulse 1.5s infinite; }
+        .inner-dot { width: 12px; height: 12px; background: #ff0000; border-radius: 50%; position: absolute; top: 4px; left: 4px; }
+        .outer-ring { width: 20px; height: 20px; border: 1px solid #ff0000; border-radius: 50%; }
+        @keyframes simplePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+        .login-box { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
+        .login-box h2 { margin-bottom: 10px; font-size: 1.8rem; color: #333; }
+        .login-box p { color: #777; margin-bottom: 20px; }
+        
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+        .input-group input:focus { border-color: #ff5e5e; }
+        
+        .submit-btn { width: 100%; padding: 14px; background-color: #ff5e5e; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        .submit-btn:hover { background-color: #d94545; }
+        
+        .extra-links { margin-top: 20px; font-size: 0.85rem; }
+        .extra-links a { color: #ff5e5e; text-decoration: none; }
+
+        /* NEW: Facial Auth Prototype Styles */
+        .face-btn { cursor: pointer; transition: transform 0.2s; border: none; background: none; }
+        .face-btn:hover { transform: scale(1.1); }
+        
+        /* Simulated Scan Modal */
+        #face-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(228, 222, 222, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        .scan-circle {
+            width: 150px; height: 150px;
+            border: 4px solid #00ff00;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .scan-line {
+            width: 100%; height: 2px;
+            background: #00ff00;
+            position: absolute;
+            top: 0;
+            animation: scanMove 2s infinite ease-in-out;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        @keyframes scanMove {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="face-modal">
+        <div>
+            <div class="scan-circle">
+                <div class="scan-line"></div>
+                <img src="Images/facial.png" style="width: 80%; margin-top: 15%;">
+            </div>
+            <h3 id="scan-text">Scanning Face...</h3>
+            <p>Keep your head steady</p>
+        </div>
+    </div>
+    <header class="navbar">
+        <div class="logo-container">
+            <a href="/Admin/index.html"><img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo"></a>
+        </div>
+        <nav>
+            <a href="/Admin/index.html">Marketplace</a>
+            <a href="#">Stories</a>
+            <a href="/Admin/">About Us</a>
+            <a href="/Admin/">Contact Us</a>
+        </nav>
+        <div class="user-actions">
+            <a href="/market-prices.html" style="text-decoration: none;">
+                <div class="live-logo-container">
+                    <span class="market-price">View Current Market Prices</span>
+                    <div class="recording-circle"><div class="inner-dot"></div><div class="outer-ring"></div></div>
+                </div>
+            </a>
+            <a href="#" style="text-decoration: none;">EN</a>
+
+            <span class="notification">🔔</span>
+            <a href="/Admin/login.html" class="login-btn-link">
+                <button class="login-btn">LOG IN</button>
+            </a>
+        </div>
+    </header>
+    <main class="login-container">
+        <div class="login-box">
+            <img src="/Images/logo.png" alt="Drukbasket" style="max-height: 50px; margin-bottom: 20px;">
+            <h2>Admin Login</h2>
+            <p>Access the management dashboard</p>
+
+            <form id="adminLoginForm">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="admin@gmail.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="submit-btn" id="subBtn">ACCESS DASHBOARD</button>
+            </form>
+        </div>
+    </main>
+    <script>
+        document.getElementById('adminLoginForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('subBtn');
+
+            btn.innerText = "Verifying...";
+
+            // Centralized Admin Credentials
+            const validEmail = "admin@gmail.com";
+            const validPass = "admin";
+
+            setTimeout(() => {
+                if(email === validEmail && pass === validPass) {
+                    // Set secure admin session
+                    localStorage.setItem('isAdminLoggedIn', 'true');
+                    window.location.href = "/Admin/index.html";
+                } else {
+                    alert("Invalid Admin Credentials.");
+                    btn.innerText = "ACCESS DASHBOARD";
+                }
+            }, 800);
+        };
+    </script>
+
+</body>
+</html>

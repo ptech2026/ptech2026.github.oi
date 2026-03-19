@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment | DrukBasket</title>
+    <script src="/auth.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Reuse your existing styles */
+        .live-logo-container { display: inline-flex; align-items: center; gap: 4px; }
+        .recording-circle { position: relative; width: 20px; height: 20px; animation: simplePulse 1.5s infinite; }
+        .inner-dot { width: 12px; height: 12px; background: #ff0000; border-radius: 50%; position: absolute; top: 4px; left: 4px; }
+        .outer-ring { width: 20px; height: 20px; border: 1px solid #ff0000; border-radius: 50%; }
+        @keyframes simplePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .payment-container { max-width: 500px; margin: 50px auto; text-align: center; padding: 40px 30px; background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }
+        .qr-code { width: 250px; height: 250px; margin: 20px auto; border: 8px solid #f9f9f9; cursor: pointer; transition: transform 0.3s, filter 0.3s; }
+        .qr-code:hover { transform: scale(1.05); filter: brightness(0.95); }
+        .amount-highlight { font-size: 2.5rem; color: #2c3e50; font-weight: bold; margin: 10px 0; }
+        .btn-confirm { background: #2ecc71; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; transition: background 0.3s; }
+        .btn-confirm:hover { background: #27ae60; }
+
+        #payment-loader {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            z-index: 10;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2ecc71;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo-container">
+            <a href="/index.html"><img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo"></a>
+        </div>
+        <nav>
+            <a href="/index.html">Marketplace</a>
+            <a href="/aboutUs.html">About Us</a>
+            <a href="/contactUs.html">Contact Us</a>
+        </nav>
+
+        <div class="user-actions">
+            <a href="/market-prices.html" style="text-decoration: none;">
+                <div class="live-logo-container">
+                    <span class="market-price">View Current Market Prices</span>
+                    <div class="recording-circle"><div class="inner-dot"></div><div class="outer-ring"></div></div>
+            </div>
+            </a>
+            <a href="Dzongkha/index.html" style="text-decoration: none;">EN</a>
+            
+            <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;">
+                <span class="cart" style="font-size: 1.5rem;">🛒</span>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+
+            <span class="notification">🔔</span>
+            <a href="/login.html" class="login-btn-link">
+                <button class="login-btn">LOG IN</button>
+            </a>
+        </div>
+    </header>
+
+    <div class="payment-container">
+        <div id="payment-loader">
+            <div class="spinner" id="spinner-icon"></div>
+            <h3 id="status-text">Connecting to Secure Gateway...</h3>
+            <p id="sub-text" style="font-size: 0.9rem; color: #666;">Please do not close your browser</p>
+        </div>
+
+        <h2>M-BoB / mPAY Payment</h2>
+        <p style="color: #666;">Scan the QR code below using your banking app</p>
+        
+        <img src="/Images/paymentQRcode.png" alt="Payment QR" class="qr-code" id="qr-image" onclick="simulateScan()">
+        
+        <p style="margin-bottom: 0; color: #888; font-size: 0.9rem;">Total Payable</p>
+        <div class="amount-highlight" id="display-total">Nu. 0</div>
+        
+        <div style="margin-top: 20px; font-size: 0.8rem; color: #aaa;">
+            <p>🔒 256-bit SSL Encrypted Transaction</p>
+        </div>
+        
+        <p style="margin-top: 15px;"><a href="/Checkout/checkout.html" style="color: #3498db; text-decoration: none; font-size: 0.9rem;">← Back to Order Summary</a></p>
+    </div>
+
+    <script>
+        // Set the amount from localStorage
+        const total = localStorage.getItem('tempTotalPayable');
+        if (total) {
+            document.getElementById('display-total').innerText = `Nu. ${total}`;
+        }
+
+        function simulateScan() {
+            const loader = document.getElementById('payment-loader');
+            const status = document.getElementById('status-text');
+            const subText = document.getElementById('sub-text');
+            
+            loader.style.display = 'flex';
+
+            // Step 1: Verification
+            setTimeout(() => {
+                status.innerText = "Verifying Transaction...";
+                status.style.color = "#f39c12";
+            }, 1500);
+
+            // Step 2: Finalizing
+            setTimeout(() => {
+                status.innerText = "Finalizing Order...";
+                status.style.color = "#2ecc71";
+            }, 3000);
+
+            // Step 3: Success State
+            setTimeout(() => {
+                loader.innerHTML = `
+                    <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
+                    <h3 style="color: #2ecc71; margin-bottom: 5px;">Payment Successful!</h3>
+                    <p style="color: #888; margin-bottom: 20px;">Order ID: DB-${Math.floor(Math.random() * 900000 + 100000)}</p>
+                    <button class="btn-confirm" onclick="handleFinish()">CONTINUE TO DASHBOARD</button>
+                `;
+            }, 4500);
+        }
+
+        function handleFinish() {
+            const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            const now = Date.now();
+            
+            // Clean data to match Dashboard requirements
+            const processedItems = cart.map((item, index) => {
+                let badgeRaw = (item.badge || item.category || "Organic").toLowerCase();
+                let cleanBadge = "Organic";
+                
+                // Map raw badge data to dashboard filter keys
+                if (badgeRaw.includes("gap")) cleanBadge = "GAP";
+                else if (badgeRaw.includes("gi")) cleanBadge = "GI Tag";
+
+                return {
+                    name: item.name || "Product",
+                    price: parseFloat(item.price) || 0,
+                    qty: parseInt(item.qty) || 1,
+                    badge: cleanBadge,
+                    timestamp: now - (index * 100) // Keeps timestamps slightly apart
+                };
+            });
+
+            // Get existing orders and append new ones
+            let pending = JSON.parse(localStorage.getItem('pendingOrders')) || [];
+            pending.push(...processedItems);
+            
+            // Save to LocalStorage for the Dashboard to read
+            localStorage.setItem('pendingOrders', JSON.stringify(pending));
+
+            // Clear the checkout data
+            localStorage.removeItem('drukCart');
+            localStorage.removeItem('cartCount');
+            localStorage.removeItem('tempTotalPayable');
+
+            // Move to Analytics Dashboard
+            window.location.href = "/index.html"; 
+        }
+    </script>
+</body>
+</html>

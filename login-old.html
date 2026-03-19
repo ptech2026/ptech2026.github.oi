@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Drukbasket</title>
+    <link rel="stylesheet" href="/style.css"> 
+    <style>
+        /* Existing Styles */
+        .live-logo-container { display: inline-flex; align-items: center; gap: 4px; }
+        .recording-circle { position: relative; width: 20px; height: 20px; animation: simplePulse 1.5s infinite; }
+        .inner-dot { width: 12px; height: 12px; background: #ff0000; border-radius: 50%; position: absolute; top: 4px; left: 4px; }
+        .outer-ring { width: 20px; height: 20px; border: 1px solid #ff0000; border-radius: 50%; }
+        @keyframes simplePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
+        .login-box { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
+        .login-box h2 { margin-bottom: 10px; font-size: 1.8rem; color: #333; }
+        .login-box p { color: #777; margin-bottom: 20px; }
+        
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+        .input-group input:focus { border-color: #ff5e5e; }
+        
+        .submit-btn { width: 100%; padding: 14px; background-color: #ff5e5e; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+        .submit-btn:hover { background-color: #d94545; }
+        
+        .extra-links { margin-top: 20px; font-size: 0.85rem; }
+        .extra-links a { color: #ff5e5e; text-decoration: none; }
+
+        /* NEW: Facial Auth Prototype Styles */
+        .face-btn { cursor: pointer; transition: transform 0.2s; border: none; background: none; }
+        .face-btn:hover { transform: scale(1.1); }
+        
+        /* Simulated Scan Modal */
+        #face-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        .scan-circle {
+            width: 150px; height: 150px;
+            border: 4px solid #00ff00;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .scan-line {
+            width: 100%; height: 2px;
+            background: #00ff00;
+            position: absolute;
+            top: 0;
+            animation: scanMove 2s infinite ease-in-out;
+            box-shadow: 0 0 15px #00ff00;
+        }
+        @keyframes scanMove {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="face-modal">
+        <div>
+            <div class="scan-circle">
+                <div class="scan-line"></div>
+                <img src="Images/facial.png" style="width: 80%; margin-top: 15%;">
+            </div>
+            <h3 id="scan-text">Scanning Face...</h3>
+            <p>Keep your head steady</p>
+        </div>
+    </div>
+    <header class="navbar">
+        <div class="logo-container">
+            <a href="/index.html"><img src="Images/logo.png" alt="Drukbasket Logo" class="main-logo"></a>
+        </div>
+        <nav>
+            <a href="/index.html">Marketplace</a>
+            <a href="/aboutUs.html">About Us</a>
+            <a href="/contactUs.html">Contact Us</a>
+        </nav>
+        <div class="user-actions">
+            <a href="/market-prices.html" style="text-decoration: none;">
+                <div class="live-logo-container">
+                    <span class="market-price">View Current Market Prices</span>
+                    <div class="recording-circle"><div class="inner-dot"></div><div class="outer-ring"></div></div>
+                </div>
+            </a>
+            <a href="#" style="text-decoration: none;">EN</a>
+            
+            <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;" onclick="window.location.href='/Preorder/preorder.html'">
+                <span class="cart" style="font-size: 1.5rem;">🛒</span>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+
+            <span class="notification">🔔</span>
+            <a href="/login.html" class="login-btn-link">
+                <button class="login-btn">LOG IN</button>
+            </a>
+        </div>
+    </header>
+    <main class="login-container">
+        <div class="login-box">
+            <img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo" style="width: 80px; margin-bottom: 10px;">
+            <h2>Login</h2>
+            <p>Login to manage your orders</p>
+            <button type="button" class="face-btn" onclick="startFaceAuth()">
+                <img src="/Images/facial.png" alt="Facial Logo" style="width: 80px;">
+                <p style="font-size: 0.8rem; margin-top: 5px;">Use Face ID</p>
+            </button>
+            <p style="margin: 15px 0;"><b>OR</b></p>
+            <form id="loginForm"> 
+                <div class="input-group">
+                    <label>Email / Phone No.</label>
+                    <input type="text" id="email" placeholder="email@example.com / 17xxxxxx" required>
+                </div>    
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="submit-btn">LOGIN</button>
+            </form>
+
+            <div class="extra-links">
+                <span>Are you admin? <a href="/Admin/login.html">Login</a></span>
+            </div>
+        </div>
+    </main>
+    <script>
+        // 1. SYNC CART BADGE
+        const cartBadge = document.getElementById('cart-count');
+        function updateBadge() {
+            const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            if (cart.length > 0) {
+                cartBadge.innerText = cart.length;
+                cartBadge.style.display = 'block';
+            } else {
+                cartBadge.style.display = 'none';
+            }
+        }
+        updateBadge();
+        // 2. FACIAL AUTH SIMULATION
+        function startFaceAuth() {
+            const modal = document.getElementById('face-modal');
+            const scanText = document.getElementById('scan-text');
+            modal.style.display = 'flex';
+
+            // Phase 1: Scanning
+            setTimeout(() => {
+                scanText.innerText = "Verifying Identity...";
+                scanText.style.color = "#00ff00";
+            }, 1500);
+
+            // Phase 2: Success and Login
+            setTimeout(() => {
+                modal.style.display = 'none';
+                completeLogin();
+            }, 3000);
+        }
+        // 3. COMMON LOGIN COMPLETION
+        function completeLogin() {
+            localStorage.setItem('isLoggedIn', 'true');
+            const redirectTo = localStorage.getItem('redirectAfterLogin');
+            
+            if (redirectTo) {
+                localStorage.removeItem('redirectAfterLogin');
+                window.location.href = redirectTo; 
+            } else {
+                window.location.href = '/index.html'; 
+            }
+        }
+        // 4. FORM LOGIN LOGIC
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.querySelector('.submit-btn');
+            btn.innerText = "Logging in..."; 
+            btn.style.opacity = "0.8";
+            setTimeout(() => {
+                completeLogin();
+            }, 800);
+        });
+    </script>
+</body>
+</html>

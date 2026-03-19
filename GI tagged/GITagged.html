@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhutan GI Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 500px; width: 100%; text-align: center; }
+        .scanner-box { width: 100%; height: 250px; background: #111; margin: 20px 0; border-radius: 15px; position: relative; overflow: hidden; border: 3px solid #333; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        #preview-img { max-width: 100%; max-height: 100%; display: none; z-index: 2; border-radius: 10px; }
+        .viewfinder-text { color: #888; position: absolute; z-index: 1; pointer-events: none; }
+        .laser { width: 100%; height: 4px; background: #00ff88; position: absolute; box-shadow: 0 0 15px #00ff88; display: none; z-index: 3; }
+        @keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
+        .scanning .laser { display: block; animation: scan 1.5s infinite alternate linear; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background 0.3s; margin-bottom: 10px; }
+        button:hover { background: #1557b0; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #result-card { margin-top: 25px; text-align: left; border-top: 2px solid #eee; padding-top: 20px; }
+        .map-container { margin-top: 15px; width: 100%; height: 300px; border-radius: 12px; border: 1px solid #ddd; overflow: hidden; }
+        #map { width: 100%; height: 100%; }
+        .badge { padding: 5px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        .badge-success { background: #e6f4ea; color: #1e8e3e; }
+        .badge-fail { background: #fce8e6; color: #d93025; }
+        .report-btn { background: #d93025; font-size: 0.8rem; padding: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>GI Product Authenticator</h2>
+        <p>Click the <b>Viewfinder</b> to select photo</p>
+        
+        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+
+        <div id="scanner-container" class="scanner-box" onclick="triggerUpload()">
+            <div class="laser"></div>
+            <div id="v-text" class="viewfinder-text">Click here to select photo...</div>
+            <img id="preview-img" alt="Product Preview">
+        </div>
+
+        <button id="scan-btn" onclick="startScan()" disabled>Scan Product</button>
+
+        <div id="result-card" class="hidden">
+            <div id="badge-container"></div>
+            <h3 id="product-name" style="margin: 5px 0;"></h3>
+            <p id="product-origin" style="font-size: 0.9rem; color: #666;"></p>
+            <div id="process-details"></div>
+            
+            <div id="map-section" class="map-container">
+                <div id="map"></div>
+            </div>
+            <div id="action-section" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let marker;
+        let lastIndex = -1;
+
+        const giDatabase = [
+            { 
+                name: "Bhutanese Areca Nut (Doma)", 
+                isVerified: true,
+                origin: "Phuntsholing Foothills", 
+                lat: 26.85, lng: 89.38,
+                process: {
+                    sourcing: "Mature, heavy nuts (18–25g) from healthy trees[cite: 5, 8].",
+                    nursery: "Seeds soaked 24–48 hours; 6–12 month nursery period[cite: 13, 19].",
+                    harvest: "August–December harvest using sharp tools[cite: 61, 63].",
+                    storage: "Stored at 15–25°C on wooden pallets[cite: 82, 85]."
+                }
+            },
+            {
+                name: "Imported Areca Nut",
+                isVerified: false,
+                origin: "Unknown / Non-GI Source",
+                lat: 26.00, lng: 89.00,
+                process: {
+                    reason: "Fails weight criteria (below 18g) and lacks local nursery traceability[cite: 8, 19]."
+                }
+            }
+        ];
+
+        function triggerUpload() { document.getElementById('file-input').click(); }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview-img');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('v-text').style.display = 'none';
+                    document.getElementById('scan-btn').disabled = false;
+                    document.getElementById('result-card').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function startScan() {
+            const btn = document.getElementById('scan-btn');
+            const scanner = document.getElementById('scanner-container');
+            btn.disabled = true;
+            btn.innerText = "Analyzing GI Metadata...";
+            scanner.classList.add('scanning');
+
+            setTimeout(() => {
+                let randomIndex;
+                do { randomIndex = Math.floor(Math.random() * giDatabase.length); } 
+                while (randomIndex === lastIndex && giDatabase.length > 1);
+                
+                lastIndex = randomIndex;
+                showResult(giDatabase[randomIndex]);
+                scanner.classList.remove('scanning');
+                btn.disabled = false;
+                btn.innerText = "Scan Another Product";
+            }, 2000);
+        }
+
+        function showResult(product) {
+            const resultCard = document.getElementById('result-card');
+            const badgeCont = document.getElementById('badge-container');
+            const processDiv = document.getElementById('process-details');
+            const actionDiv = document.getElementById('action-section');
+            
+            resultCard.classList.remove('hidden');
+            processDiv.innerHTML = '';
+            actionDiv.innerHTML = '';
+            
+            document.getElementById('product-name').innerText = product.name;
+            document.getElementById('product-origin').innerText = "Source: " + product.origin;
+
+            if (product.isVerified) {
+                badgeCont.innerHTML = `<span class="badge badge-success">✓ ORIGIN VERIFIED</span>`;
+                processDiv.innerHTML = `
+                    <div style="margin-top: 10px; font-size: 0.8rem; background: #f0f7f2; padding: 10px; border-radius: 8px;">
+                        <b>Verified Standards:</b>
+                        <ul style="margin: 5px 0; padding-left: 15px;">
+                            <b>Sourcing:</b> ${product.process.sourcing}<br>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 8px 0;">
+                            <b>Nursery:</b> ${product.process.nursery}<br>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 8px 0;">
+                            <b>Harvest:</b> ${product.process.harvest}<br>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 8px 0;">
+                            <b>Storage:</b> ${product.process.storage}
+                        </ul>
+                    </div>`;
+                document.getElementById('map-section').style.display = 'block';
+            } else {
+                badgeCont.innerHTML = `<span class="badge badge-fail">⚠️ AUTHENTICATION FAILED</span>`;
+                processDiv.innerHTML = `
+                    <div style="margin-top: 10px; font-size: 0.8rem; background: #fff1f0; padding: 10px; border-radius: 8px; border: 1px solid #ffa39e;">
+                        <b>Rejection Reason:</b> ${product.process.reason}
+                    </div>`;
+                actionDiv.innerHTML = `<button class="report-btn">Report Counterfeit to BAFRA</button>`;
+                document.getElementById('map-section').style.display = 'none';
+            }
+
+            if (product.isVerified) {
+                if (!map) {
+                    map = L.map('map').setView([product.lat, product.lng], 12);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                } else {
+                    map.setView([product.lat, product.lng], 12);
+                }
+                setTimeout(() => { map.invalidateSize(); }, 200);
+                if (marker) map.removeLayer(marker);
+                marker = L.marker([product.lat, product.lng]).addTo(map).bindPopup(product.name).openPopup();
+            }
+        }
+    </script>
+</body>
+</html>

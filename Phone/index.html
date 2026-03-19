@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Druk Basket | Farmer Market</title>
+
+  <style>
+    :root {
+      --farmer-green: #27ae60;
+      --farmer-brown: #5d4037;
+      --soil-bg: #fdfaf6;
+      --price-red: #c0392b;
+    }
+
+    body {
+      background: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .phone-container {
+      width: 375px;
+      height: 812px;
+      background: var(--soil-bg);
+      border: 12px solid #000;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,.5);
+    }
+
+    /* HEADER */
+    .app-header {
+      background: #fff;
+      padding: 20px 15px 10px;
+      border-bottom: 3px solid var(--farmer-green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .main-logo { height: 35px; }
+
+    /* VISUAL CATEGORY SELECTOR */
+    .category-scroll {
+      display: flex;
+      gap: 10px;
+      padding: 15px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .category-scroll::-webkit-scrollbar { display: none; }
+
+    .cat-btn {
+      min-width: 80px;
+      background: white;
+      border: 2px solid #eee;
+      border-radius: 15px;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: var(--farmer-brown);
+      cursor: pointer;
+    }
+    .cat-btn.active {
+      border-color: var(--farmer-green);
+      background: #e9f6ee;
+    }
+    .cat-btn span { display: block; font-size: 1.5rem; margin-bottom: 5px; }
+
+    /* SEARCH */
+    .search-box {
+      padding: 0 15px 10px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 15px;
+      border-radius: 30px;
+      border: 2px solid #ddd;
+      font-size: 1rem;
+      background: #fff;
+    }
+
+    .screen {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 100px;
+    }
+
+    /* PRODUCT CARDS */
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0 15px;
+    }
+
+    .farmer-card {
+      background: #fff;
+      border-radius: 20px;
+      display: flex;
+      padding: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      border: 1px solid #eee;
+      position: relative;
+    }
+
+    .farmer-card img {
+      width: 100px;
+      height: 100px;
+      border-radius: 15px;
+      object-fit: cover;
+    }
+
+    .card-info {
+      flex: 1;
+      padding-left: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .card-info h3 { margin: 0; font-size: 1.1rem; color: #333; }
+    
+    .price-tag {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--price-red);
+      margin: 5px 0;
+    }
+
+    .tag-small {
+      display: inline-block;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .tag-organic { background: #d4edda; color: #155724; }
+    .tag-gi { background: #fff3cd; color: #856404; }
+
+    .order-btn {
+      background: var(--farmer-green);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    /* BOTTOM NAVIGATION */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0; width: 100%;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 25px;
+      border-top: 2px solid #eee;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      text-align: center;
+      color: #999;
+    }
+    .nav-link.active { color: var(--farmer-green); }
+    .nav-link i { display: block; font-size: 1.5rem; font-style: normal; }
+    .nav-link span { font-size: 10px; font-weight: bold; }
+
+    .cart-count {
+      background: var(--price-red);
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      position: absolute;
+      top: 5px; right: 25px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone-container">
+  <header class="app-header">
+    <img src="/Images/logo.png" alt="Druk Basket" class="main-logo">
+    <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;" onclick="window.location.href='/Phone/addToCart.html'">
+        <span class="cart" style="font-size: 1.5rem;">🛒</span>
+        <span id="cart-count" class="cart-badge">0</span>
+    </div>
+  </header>
+
+  <div class="screen">
+    <div class="category-scroll">
+      <div class="cat-btn active" onclick="filterCat('all', this)"><span>🌾</span>All Items</div>
+      <div class="cat-btn" onclick="filterCat('Organic', this)"><span>🍃</span>Organic</div>
+      <div class="cat-btn" onclick="filterCat('GI Tag', this)"><span>🏅</span>GI Tag</div>
+      <div class="cat-btn" onclick="filterCat('GAP', this)"><span>✅</span>GAP</div>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="pSearch" placeholder="🔍 Search for crops (Onion, Potato...)">
+    </div>
+
+    <div class="product-list" id="productList">
+      </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <!---<a href="/Phone/home.html" class="nav-link"><i>🏠</i><span>HOME</span></a>--->
+    <a href="/Phone/index.html" class="nav-link active"><i>🥬</i><span>MARKET</span></a>
+    <a href="/Phone/market-prices.html" class="nav-link"><i>📈</i><span>PRICES</span></a>
+    <a href="/Phone/login.html" class="nav-link"><i>👤</i><span>MY ACCOUNT</span></a>
+  </nav>
+</div>
+
+<script>
+  const products = [
+    { name: "Red Onion", price: "60", unit: "Kg", badge: "GAP", img: "Images/red-onion.jpg" },
+    { name: "Local Potato", price: "45", unit: "Kg", badge: "GI Tag", img: "Images/local-potato.jpg" },
+    { name: "Pure Honey", price: "850", unit: "500ml", badge: "GI Tag", img: "Images/honey.jpg" },
+    { name: "Green Chilli", price: "120", unit: "Kg", badge: "Organic", img: "Images/green-chilli.jpg" }
+  ];
+
+  function render(data) {
+    const container = document.getElementById('productList');
+    container.innerHTML = data.map(p => `
+      <div class="farmer-card">
+        <img src="${p.img}">
+        <div class="card-info">
+          <span class="tag-small ${p.badge==='Organic'?'tag-organic':'tag-gi'}">${p.badge}</span>
+          <h3>${p.name}</h3>
+          <div class="price-tag">Nu. ${p.price} <small style="font-size:12px; color:#777">/ ${p.unit}</small></div>
+          <button class="order-btn" onclick="buy('${p.name}', ${p.price})">ADD TO ORDER</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterCat(cat, el) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    const filtered = cat === 'all' ? products : products.filter(p => p.badge === cat);
+    render(filtered);
+  }
+
+  function buy(name, price) {
+    let cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+    cart.push({name, price, qty: 1});
+    localStorage.setItem('drukCart', JSON.stringify(cart));
+    updateBadge();
+    alert(name + " added to your order!");
+  }
+
+  function updateBadge() {
+    const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+    const b = document.getElementById('cart-badge');
+    if(cart.length) { b.innerText = cart.length; b.style.display = 'block'; }
+  }
+
+  document.getElementById('pSearch').addEventListener('input', (e) => {
+    const val = e.target.value.toLowerCase();
+    render(products.filter(p => p.name.toLowerCase().includes(val)));
+  });
+
+  render(products);
+  updateBadge();
+</script>
+
+</body>
+</html>

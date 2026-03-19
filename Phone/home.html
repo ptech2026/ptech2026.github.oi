@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Drukbasket | Mobile Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --bg: #f8f9fa;
+        }
+
+        body {
+            background-color: #222; /* Outside phone frame */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, system-ui, sans-serif;
+        }
+
+        /* PHONE FRAME SIMULATION */
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: var(--bg);
+            border: 12px solid #000;
+            border-radius: 45px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            height: 44px;
+            padding: 0 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: white;
+        }
+
+        /* APP HEADER */
+        header {
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 100px; /* Space for nav */
+        }
+
+        h1 { font-size: 1.2rem; margin: 10px 0; color: var(--dark); }
+
+        /* HORIZONTAL SCROLLING STATS */
+        .stats-slider {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 15px;
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+        .stats-slider::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+
+        .stat-card {
+            min-width: 130px;
+            background: white;
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border-left: 4px solid var(--primary);
+        }
+        .stat-card h3 { font-size: 0.75rem; margin: 0; color: #888; text-transform: uppercase; }
+        .stat-card .value { font-size: 1.2rem; font-weight: bold; margin-top: 5px; color: var(--dark); }
+
+        /* CHART BOXES */
+        .chart-box {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .chart-box h2 { font-size: 1rem; margin-top: 0; }
+
+        /* TRANSACTION FEED */
+        .feed-box {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+        }
+        .feed-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; }
+        .tag.organic { background: var(--primary); }
+        .tag.gap { background: var(--secondary); }
+        .tag.gi { background: var(--warning); color: black; }
+
+        /* BOTTOM NAV BAR */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+        }
+        .nav-item { text-align: center; color: #ccc; font-size: 20px; text-decoration: none; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item span { display: block; font-size: 10px; margin-top: 4px; }
+
+        #live-indicator { animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <div class="status-bar">
+        <span>9:41</span>
+        <span>📶 🔋</span>
+    </div>
+
+    <header>
+        <img src="/Images/logo.png" alt="Logo" style="height: 25px;">
+        <a href="/Phone/market-prices.html" style="text-decoration: none;">
+            <div id="live-indicator" style="color: red; font-size: 10px; font-weight: bold;">● LIVE</div>
+        </a>
+    </header>
+
+    <div class="main-content">
+        <h1>Dashboard</h1>
+
+        <div class="stats-slider">
+            <div class="stat-card">
+                <h3>Organic</h3>
+                <div class="value" id="count-organic">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--secondary);">
+                <h3>GAP</h3>
+                <div class="value" id="count-gap">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--warning);">
+                <h3>GI Tag</h3>
+                <div class="value" id="count-gi">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--dark);">
+                <h3>Revenue</h3>
+                <div class="value">Nu.<span id="total-revenue">0</span></div>
+            </div>
+        </div>
+
+        <div class="chart-box">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Top Products</h2>
+                <select id="timeFilter" onchange="updateDashboard()" style="font-size: 10px; border-radius: 5px; border: 1px solid #eee;">
+                    <option value="all">All</option>
+                    <option value="daily">24h</option>
+                    <option value="weekly">7d</option>
+                </select>
+            </div>
+            <div style="height: 200px;">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        
+        <div class="chart-box">
+            <h2>Market Share</h2>
+            <div style="height: 180px;">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="feed-box">
+            <h2>Recent Orders</h2>
+            <div id="feed-list">
+                </div>
+        </div>
+
+        <!---<button onclick="localStorage.clear(); location.reload();" style="width:100%; margin-top: 20px; padding: 12px; border: none; background: #eee; border-radius: 10px; color: #888; font-size: 12px;">Reset Dashboard Data</button>--->
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="/Phone/home.html" class="nav-item active">🏠<span>Home</span></a>
+        <a href="/Phone/index.html" class="nav-item">🥬<span>Market</span></a>
+        <a href="/Phone/addToCart.html" class="nav-item">🛒<span>Cart</span></a>
+        <a href="/Phone/login.html" class="nav-item">👤<span>Account</span></a>
+    </nav>
+</div>
+
+<script>
+    let barChart, pieChart;
+
+    window.onload = function() {
+        initCharts();
+        updateDashboard();
+        // Simulation: auto-update
+        setInterval(updateDashboard, 3000);
+    };
+
+    function initCharts() {
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Units', data: [], backgroundColor: '#2ecc71', borderRadius: 8 }] },
+            options: { 
+                indexAxis: 'y', 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { grid: { display: false } }, y: { grid: { display: false } } }
+            }
+        });
+
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        pieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Organic', 'GAP', 'GI'],
+                datasets: [{ data: [1, 1, 1], backgroundColor: ['#2ecc71', '#3498db', '#f1c40f'], borderWidth: 0 }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } }
+            }
+        });
+    }
+
+    function updateDashboard() {
+        const allOrders = JSON.parse(localStorage.getItem('pendingOrders')) || [];
+        let stats = { organic: 0, gap: 0, gi: 0, revenue: 0 };
+        let productSales = {};
+        const feedList = document.getElementById('feed-list');
+        feedList.innerHTML = "";
+
+        // Process only last 5 for mobile feed visibility
+        allOrders.slice(-5).reverse().forEach(item => {
+            const pName = item.name || "Product";
+            const pQty = parseInt(item.qty) || 1;
+            const tagClass = (item.badge || "Organic").toLowerCase().replace(" ", "");
+            
+            const div = document.createElement('div');
+            div.className = 'feed-item';
+            div.innerHTML = `<span><b>${pName}</b> <small>x${pQty}</small></span> <span class="tag ${tagClass}">${tagClass.toUpperCase()}</span>`;
+            feedList.appendChild(div);
+        });
+
+        // Totals
+        allOrders.forEach(item => {
+            const tag = (item.badge || "Organic").toUpperCase();
+            const pQty = parseInt(item.qty) || 1;
+            if (tag === "GAP") stats.gap += pQty;
+            else if (tag.includes("GI")) stats.gi += pQty;
+            else stats.organic += pQty;
+            
+            stats.revenue += (parseFloat(item.price) || 0) * pQty;
+            productSales[item.name] = (productSales[item.name] || 0) + pQty;
+        });
+
+        // UI Updates
+        document.getElementById('count-organic').innerText = stats.organic;
+        document.getElementById('count-gap').innerText = stats.gap;
+        document.getElementById('count-gi').innerText = stats.gi;
+        document.getElementById('total-revenue').innerText = stats.revenue.toLocaleString();
+
+        if (barChart) {
+            barChart.data.labels = Object.keys(productSales).slice(0, 5);
+            barChart.data.datasets[0].data = Object.values(productSales).slice(0, 5);
+            barChart.update();
+        }
+        if (pieChart) {
+            pieChart.data.datasets[0].data = [stats.organic, stats.gap, stats.gi];
+            pieChart.update();
+        }
+    }
+</script>
+
+</body>
+</html>

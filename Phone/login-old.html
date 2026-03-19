@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Drukbasket Mobile</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    /* PHONE FRAME SIMULATION */
+    body {
+      background-color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .phone-container {
+      width: 375px;
+      height: 812px;
+      background: #fff;
+      border: 12px solid #000;
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* OTP SMS Notification (TOP OF PHONE) */
+    #otp-notification {
+      position: absolute;
+      top: -80px;
+      left: 0;
+      width: 100%;
+      background: #1c1c1e;
+      color: #fff;
+      padding: 14px;
+      font-size: 0.85rem;
+      text-align: center;
+      z-index: 2500;
+      transition: top 0.4s ease;
+    }
+    #otp-notification.show {
+      top: 0;
+    }
+
+    /* APP HEADER */
+    .app-header {
+      padding: 20px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      background: #fff;
+      z-index: 5;
+    }
+
+    .login-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .login-box {
+      text-align: center;
+      width: 100%;
+    }
+
+    .login-box h2 {
+      font-size: 1.5rem;
+      color: #333;
+      margin: 10px 0;
+    }
+    .login-box p {
+      color: #777;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    /* INPUT STYLES */
+    .input-group {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 0.8rem;
+      color: #555;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .input-group input:focus {
+      border-color: #ff5e5e;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background-color: #ff5e5e;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .submit-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    /* FACE ID STYLING */
+    .face-btn {
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 15px;
+      padding: 15px;
+      width: 120px;
+      margin: 0 auto;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .face-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* MODAL OVERLAY (Within Phone Frame) */
+    #face-modal {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+    }
+
+    .scan-circle {
+      width: 180px;
+      height: 180px;
+      border: 3px solid #00ff00;
+      border-radius: 50%;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .scan-line {
+      width: 100%;
+      height: 2px;
+      background: #00ff00;
+      position: absolute;
+      top: 0;
+      animation: scanMove 2s infinite ease-in-out;
+      box-shadow: 0 0 15px #00ff00;
+    }
+
+    @keyframes scanMove {
+      0%,
+      100% {
+        top: 0;
+      }
+      50% {
+        top: 100%;
+      }
+    }
+
+    /* OTP helpers */
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    .link-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #ff5e5e;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .muted {
+      color: #888;
+      font-size: 0.8rem;
+    }
+    .error {
+      color: #d11;
+      font-size: 0.85rem;
+      margin-top: 8px;
+      display: none;
+    }
+    .hint {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed #eee;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      color: #666;
+      display: none;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <!-- ✅ OTP Notification Simulation (TOP OF PHONE, always available) -->
+    <div id="otp-notification">
+      📩 SMS: Your Drukbasket OTP is <b id="notifOtp">000000</b>
+    </div>
+
+    <!-- Face Modal -->
+    <div id="face-modal">
+      <div>
+        <div class="scan-circle">
+          <div class="scan-line"></div>
+          <span style="font-size: 50px;">👤</span>
+        </div>
+        <h3 id="scan-text">Scanning Face...</h3>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Position your face in the frame</p>
+      </div>
+    </div>
+
+    <header class="app-header">
+      <a href="/Phone/index.html"><img src="/Images/logo.png" alt="Logo" style="height: 25px;" /></a>
+      <span onclick="history.back()" style="cursor: pointer; font-size: 1.2rem;">✕</span>
+    </header>
+
+    <main class="login-container">
+      <div class="login-box">
+        <h2 id="titleText">Welcome Back</h2>
+        <p id="subText">Sign in to continue shopping</p>
+
+        <button type="button" class="face-btn" onclick="startFaceAuth()">
+          <div style="font-size: 40px;">👤</div>
+          <p style="font-size: 0.7rem; margin: 5px 0 0; font-weight: bold;">Face ID</p>
+        </button>
+
+        <div style="margin: 20px 0; display: flex; align-items: center; gap: 10px;">
+          <hr style="flex:1; border:0; border-top:1px solid #eee;">
+          <span style="font-size: 0.7rem; color: #bbb;">OR PHONE</span>
+          <hr style="flex:1; border:0; border-top:1px solid #eee;">
+        </div>
+
+        <!-- STEP 1: PHONE -->
+        <form id="phoneForm">
+          <div class="input-group">
+            <label>Phone Number</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <div style="padding: 12px 10px; border:1px solid #ddd; border-radius:10px; font-weight:700; color:#333;">+975</div>
+              <input type="tel" id="phone" placeholder="Enter your phone number" required inputmode="numeric" pattern="[0-9]{8}">
+            </div>
+            <div class="muted" style="margin-top:6px;">Example: 17xxxxxx (8 digits)</div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="getOtpBtn">Get OTP</button>
+          <div class="error" id="phoneError">Please enter a valid 8-digit phone number.</div>
+
+          <!-- Optional dev hint -->
+          <div class="hint" id="demoHint"></div>
+        </form>
+
+        <!-- STEP 2: OTP -->
+        <form id="otpForm" style="display:none;">
+          <div class="input-group">
+            <label>Enter OTP</label>
+            <input type="tel" id="otp" placeholder="6-digit OTP" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6">
+            <div class="muted" id="otpToText" style="margin-top:6px;"></div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="verifyBtn">Verify OTP</button>
+          <div class="error" id="otpError">Invalid OTP. Please try again.</div>
+
+          <div class="row">
+            <button type="button" class="link-btn" id="changeNumberBtn">Change number</button>
+            <button type="button" class="link-btn" id="resendBtn" disabled>Resend OTP (<span id="timer">30</span>s)</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ---------- Face Auth Simulation ----------
+    function startFaceAuth() {
+      const modal = document.getElementById("face-modal");
+      const scanText = document.getElementById("scan-text");
+      modal.style.display = "flex";
+
+      setTimeout(() => {
+        scanText.innerText = "Verifying...";
+        scanText.style.color = "#00ff00";
+      }, 1500);
+
+      setTimeout(() => {
+        modal.style.display = "none";
+        completeLogin();
+      }, 3000);
+    }
+
+    // ---------- Login Completion ----------
+    function completeLogin() {
+      localStorage.setItem("isLoggedIn", "true");
+      window.location.href = "/Phone/home.html";
+    }
+
+    // ---------- OTP Flow (Simulation) ----------
+    const phoneForm = document.getElementById("phoneForm");
+    const otpForm = document.getElementById("otpForm");
+    const getOtpBtn = document.getElementById("getOtpBtn");
+    const verifyBtn = document.getElementById("verifyBtn");
+
+    const phoneInput = document.getElementById("phone");
+    const otpInput = document.getElementById("otp");
+
+    const phoneError = document.getElementById("phoneError");
+    const otpError = document.getElementById("otpError");
+    const demoHint = document.getElementById("demoHint");
+
+    const titleText = document.getElementById("titleText");
+    const subText = document.getElementById("subText");
+    const otpToText = document.getElementById("otpToText");
+
+    const resendBtn = document.getElementById("resendBtn");
+    const changeNumberBtn = document.getElementById("changeNumberBtn");
+
+    let resendTimer = null;
+    let secondsLeft = 30;
+
+    function isValidBtPhone(p) {
+      return /^[0-9]{8}$/.test(p);
+    }
+
+    function generateOtp() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    // ✅ Show a top SMS-like notification and auto-fill OTP (simulation)
+    async function sendOtpApi(fullPhone, otp) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // show OTP in notification
+          document.getElementById("notifOtp").innerText = otp;
+          document.getElementById("otp-notification").classList.add("show");
+
+          // auto-fill OTP input (nice simulation)
+          otpInput.value = otp;
+
+          // auto-hide notification
+          setTimeout(() => {
+            document.getElementById("otp-notification").classList.remove("show");
+          }, 4000);
+
+          resolve();
+        }, 1200);
+      });
+    }
+
+    function showOtpStep(phone) {
+      phoneForm.style.display = "none";
+      otpForm.style.display = "block";
+      titleText.innerText = "Verify OTP";
+      subText.innerText = "Enter the code sent to your phone";
+      otpToText.innerText = `Sent to +975 ${phone}`;
+      otpError.style.display = "none";
+
+      startResendCountdown(30);
+    }
+
+    function showPhoneStep() {
+      phoneForm.style.display = "block";
+      otpForm.style.display = "none";
+      titleText.innerText = "Welcome Back";
+      subText.innerText = "Sign in to continue shopping";
+      otpError.style.display = "none";
+      phoneError.style.display = "none";
+      demoHint.style.display = "none";
+
+      stopResendCountdown();
+    }
+
+    function stopResendCountdown() {
+      if (resendTimer) clearInterval(resendTimer);
+      resendTimer = null;
+      resendBtn.disabled = true;
+    }
+
+    function startResendCountdown(sec) {
+      secondsLeft = sec;
+      resendBtn.disabled = true;
+
+      // build button label (and update timer inside interval)
+      resendBtn.innerHTML = `Resend OTP (<span id="timer">${secondsLeft}</span>s)`;
+
+      if (resendTimer) clearInterval(resendTimer);
+
+      resendTimer = setInterval(() => {
+        secondsLeft--;
+        const t = document.getElementById("timer");
+        if (t) t.innerText = secondsLeft;
+
+        if (secondsLeft <= 0) {
+          clearInterval(resendTimer);
+          resendTimer = null;
+          resendBtn.disabled = false;
+          resendBtn.innerText = "Resend OTP";
+        }
+      }, 1000);
+    }
+
+    function setLoading(btn, on, labelWhenOff) {
+      btn.disabled = on;
+      btn.innerText = on ? "Processing..." : labelWhenOff;
+    }
+
+    // Submit phone -> send OTP
+    phoneForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const phone = (phoneInput.value || "").trim();
+
+      phoneError.style.display = "none";
+      if (!isValidBtPhone(phone)) {
+        phoneError.style.display = "block";
+        return;
+      }
+
+      setLoading(getOtpBtn, true, "Get OTP");
+
+      const otp = generateOtp();
+      const fullPhone = `+975${phone}`;
+
+      sessionStorage.setItem("otp_phone", fullPhone);
+      sessionStorage.setItem("otp_code", otp);
+      sessionStorage.setItem("otp_created_at", Date.now().toString());
+
+      try {
+        showOtpStep(phone); // show OTP screen right away (UX)
+        await sendOtpApi(fullPhone, otp); // then simulate SMS arriving
+
+        // Optional dev hint (remove later)
+        demoHint.style.display = "block";
+        demoHint.innerHTML = `<b>Demo OTP:</b> ${otp}<br><span class="muted">Remove this in production.</span>`;
+      } catch (err) {
+        phoneError.style.display = "block";
+        phoneError.innerText = "Failed to send OTP. Please try again.";
+      } finally {
+        setLoading(getOtpBtn, false, "Get OTP");
+      }
+    });
+
+    // Verify OTP -> if matches, redirect
+    otpForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      otpError.style.display = "none";
+
+      const entered = (otpInput.value || "").trim();
+      const savedOtp = sessionStorage.getItem("otp_code");
+
+      if (!/^[0-9]{6}$/.test(entered)) {
+        otpError.style.display = "block";
+        otpError.innerText = "Please enter a valid 6-digit OTP.";
+        return;
+      }
+
+      setLoading(verifyBtn, true, "Verify OTP");
+
+      setTimeout(() => {
+        if (entered === savedOtp) {
+          sessionStorage.removeItem("otp_code");
+          completeLogin();
+        } else {
+          otpError.style.display = "block";
+          otpError.innerText = "Invalid OTP. Please try again.";
+          setLoading(verifyBtn, false, "Verify OTP");
+        }
+      }, 350);
+    });
+
+    // Resend OTP
+    resendBtn.addEventListener("click", async () => {
+      const fullPhone = sessionStorage.getItem("otp_phone");
+      if (!fullPhone) return;
+
+      resendBtn.disabled = true;
+      resendBtn.innerText = "Sending...";
+
+      const otp = generateOtp();
+      sessionStorage.setItem("otp_code", otp);
+      sessionStorage.setItem("otp_created_at", Date.now().toString());
+
+      try {
+        await sendOtpApi(fullPhone, otp);
+
+        demoHint.style.display = "block";
+        demoHint.innerHTML = `<b>Demo OTP:</b> ${otp}<br><span class="muted">Remove this in production.</span>`;
+
+        startResendCountdown(30);
+      } catch (err) {
+        resendBtn.disabled = false;
+        resendBtn.innerText = "Resend OTP";
+        otpError.style.display = "block";
+        otpError.innerText = "Failed to resend OTP. Please try again.";
+      }
+    });
+
+    // Change number
+    changeNumberBtn.addEventListener("click", () => {
+      sessionStorage.removeItem("otp_phone");
+      sessionStorage.removeItem("otp_code");
+      sessionStorage.removeItem("otp_created_at");
+      otpInput.value = "";
+      showPhoneStep();
+    });
+  </script>
+</body>
+</html>

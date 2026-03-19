@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style.css">
+  <title>Stories</title>
+  <style>
+    :root{--bg:#f4f6f6;--card:#fff;--text:#1f2a2e;--muted:#6b7b83;--border:rgba(0,0,0,.06);--shadow:0 12px 30px rgba(16,24,40,.08);--radius:14px;
+      --nav-bg:#fbf7ef;--nav-border:rgba(0,0,0,.08);--nav-active-bg:#dfeee2;--nav-active-text:#0b6b2e;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .nav-wrap{background:var(--nav-bg);border-bottom:1px solid var(--nav-border);position:sticky;top:0;z-index:10}
+    .nav{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:16px}
+    .nav-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .brand{font-weight:800;margin-right:8px;color:#183028}
+    .nav a{text-decoration:none;color:#2a2a2a;padding:10px 18px;border-radius:12px;font-weight:600}
+    .nav a:hover{background:rgba(0,0,0,.04)}
+    .nav a.active{background:var(--nav-active-bg);color:var(--nav-active-text)}
+    .container{max-width:1180px;margin:26px auto;padding:0 18px 30px}
+    h1{margin:0 0 14px;font-size:36px}
+    .sub{color:var(--muted);font-weight:600;margin-bottom:18px}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .story{padding:14px 10px;border-bottom:1px solid rgba(0,0,0,.06);cursor:pointer}
+    .story:last-child{border-bottom:none}
+    .st-title{font-weight:900}
+    .st-meta{color:var(--muted);font-weight:700;font-size:13px;margin-top:4px}
+    .reader h2{margin:0 0 8px}
+    .reader p{margin:0;color:#2a3438;line-height:1.6}
+    @media(max-width:1100px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-container">
+        <img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+      </div>
+
+      <div class="nav-left">
+        <a class="active" href="home.html">Home</a>
+        <a href="team.html">Our Team</a>
+        <a href="news.html">News</a>
+        <a href="stories.html">Stories</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div class="nav-right">
+        <a href="staff.html">Staff Area</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Stories</h1>
+    <div class="sub">Farmer & customer stories (simple story reader UI).</div>
+
+    <div class="grid">
+      <div class="card" id="list"></div>
+      <div class="card reader" id="reader">
+        <h2>Select a story</h2>
+        <p>Click any story on the left to read.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stories = [
+      { title:"From farm to table: Organic beetroot success", author:"Farmer Group A", date:"2026-02-11",
+        body:"This season, our beetroot yield increased thanks to better composting and water management. With the platform, we were able to sell faster and reduce wastage..." },
+      { title:"GI Tag Yak Cheese reaching new buyers", author:"Dairy Cooperative", date:"2026-02-07",
+        body:"We improved packaging and showcased GI verification. Customers trusted the badge and repeat orders grew steadily..." },
+      { title:"How GAP practices improved consistency", author:"Vegetable Grower", date:"2026-02-03",
+        body:"Following GAP practices reduced rejected items. Quality became consistent and our products ranked higher in top-selling analytics..." },
+    ];
+
+    const list = document.getElementById("list");
+    const reader = document.getElementById("reader");
+
+    function renderList(){
+      list.innerHTML = stories.map((s,i)=>`
+        <div class="story" data-i="${i}">
+          <div class="st-title">${s.title}</div>
+          <div class="st-meta">${s.author} • ${s.date}</div>
+        </div>
+      `).join("");
+    }
+
+    list.addEventListener("click",(e)=>{
+      const item = e.target.closest(".story");
+      if(!item) return;
+      const s = stories[Number(item.dataset.i)];
+      reader.innerHTML = `
+        <h2>${s.title}</h2>
+        <div class="st-meta">${s.author} • ${s.date}</div>
+        <p style="margin-top:12px">${s.body}</p>
+      `;
+    });
+
+    renderList();
+  </script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Druk Basket</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+        </div>
+        <nav>
+            <a href="index.html">ཚོང་འགྲན།</a>
+            <a href="#">སྔོན་བྱིན་སྤྲོད་ནི།</a>
+            <a href="#">ང་བཅས་ཀྱི་སྐོར་།</a>
+            <a href="#">འབྲེལ་བ་འཐབ་ནི།</a>
+        </nav>
+        <div class="user-actions">
+            <span class="market-price">ཁྲོམ་གྱི་གོང་ཚད་ལྟ་ནི།</span>
+            <a href="/index.html" style="text-decoration: none;">DZO</a>
+            <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;" onclick="window.location.href='/Addtocart/addToCart.html'">
+                <span class="cart" style="font-size: 1.5rem;">🛒</span>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+            <span class="notification">🔔</span>
+            <a href="/login.html" class="login-btn-link">
+                <button class="login-btn">ནང་འཛུལ་འབད་།</button>
+            </a>
+        </div>
+    </header> 
+
+    <section class="filter-bar">
+        <input type="text" id="productSearch" placeholder="Search by keyword (e.g. Chilli, Rice)">
+        <select id="categoryFilter">
+            <option value="all">Select Category</option>
+            <option value="Organic">Certified Organic Product</option>
+            <option value="GI Tag">GI Tag Product</option>
+            <option value="GAP">GAP Product</option>
+        </select>
+        <button class="search-btn">🔍</button>
+    </section>
+
+    <main class="product-grid" id="product-grid">
+        </main>
+
+    <script>
+        const products = [
+            { name: "Red Onion", price: "60", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=300" },
+            { name: "Local Potato", price: "45", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1518977676601-b53f02ac6d5d?w=300" },
+            { name: "Pure Wild Honey", price: "850", unit: "500ml", badge: "GI Tag", img: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=300" },
+            { name: "Organic Green Chilli", price: "120", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1564661135178-342d2f59880c?w=300" },
+            { name: "Red Rice (Premium)", price: "1200", unit: "25Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300" },
+            { name: "Fresh Cow Butter", price: "550", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1552689486-f6773047d19f?w=300" },
+            { name: "Sweet Carrots", price: "70", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=300" },
+            { name: "Yak Cheese (Chugo)", price: "150", unit: "Pkt", badge: "GI Tag", img: "https://images.unsplash.com/photo-1552767059-ce182ead6c1b?w=300" },
+            { name: "Dried Beef (Sukam)", price: "1400", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=300" },
+            { name: "Cordyceps Tea", price: "1800", unit: "Box", badge: "Organic", img: "https://images.unsplash.com/photo-1594631252845-29fc4586c552?w=300" },
+            { name: "King Chilli (Dalle)", price: "350", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1563203119-905e94be70df?w=300" },
+            { name: "Local Ginger", price: "90", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=300" },
+            { name: "Doma (Areca Nut)", price: "60", unit: "Pon", badge: "GI Tag", img: "https://images.unsplash.com/photo-1596515298514-638069678122?w=300" },
+            { name: "Asparagus", price: "150", unit: "Bundle", badge: "Organic", img: "https://images.unsplash.com/photo-1515471204579-f30b050d440d?w=300" },
+            { name: "Walnuts", price: "450", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1525467026048-91640430fd56?w=300" },
+            { name: "Apple Juice", price: "120", unit: "Bottle", badge: "GI Tag", img: "https://images.unsplash.com/photo-1613478223719-2ab80260f423?w=300" },
+            { name: "Oyster Mushroom", price: "250", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1504675099198-7023dd85f5a3?w=300" },
+            { name: "Cardamom", price: "1100", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1599940778173-e276d4acb2bb?w=300" },
+            { name: "Buckwheat Flour", price: "160", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1616128608832-613d9426f0bc?w=300" },
+            { name: "Local Garlic", price: "220", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=300" },
+            { name: "Broccoli", price: "85", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1459411621453-7b03977f4bef?w=300" },
+            { name: "Free-Range Eggs", price: "480", unit: "Tray", badge: "Organic", img: "https://images.unsplash.com/photo-1587486914762-8f55fb59580b?w=300" },
+            { name: "Mustard Oil", price: "240", unit: "Ltr", badge: "GI Tag", img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=300" },
+            { name: "Pumpkin", price: "40", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1506510232441-9983fcd68b10?w=300" },
+            { name: "Cauliflower", price: "75", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1568584711075-3d021a7c3ca3?w=300" },
+            { name: "Red Radish", price: "30", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1591871937573-74dbba515c4c?w=300" },
+            { name: "Cabbage", price: "35", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1591189863430-ab87e120f312?w=300" },
+            { name: "Spinach", price: "40", unit: "Bundle", badge: "Organic", img: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=300" },
+            { name: "Turnip", price: "25", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1506806732259-39c2d4ad310c?w=300" },
+            { name: "Maize Rice (Kharang)", price: "90", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1551462147-37885acc3c44?w=300" },
+            { name: "Local Peaches", price: "180", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1629999050803-3bc55c321740?w=300" },
+            { name: "Pear", price: "220", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1514756331096-242f3900faff?w=300" },
+            { name: "Persimmon", price: "250", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1601372517861-5544778f566f?w=300" },
+            { name: "Cucumber", price: "50", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1449339044511-d14d2ba8294b?w=300" },
+            { name: "Eggplant", price: "60", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1528137858148-d0180c57118d?w=300" },
+            { name: "Zucchini", price: "80", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1592924357228-91a4dadbe7c5?w=300" },
+            { name: "Beetroot", price: "70", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1444731961956-751ed90465a5?w=300" },
+            { name: "Soybean", price: "110", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1582515073490-39981397c445?w=300" },
+            { name: "Dried Chilli", price: "450", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1514537022378-5a21034f8101?w=300" },
+            { name: "Bamboo Shoot", price: "150", unit: "Jar", badge: "Organic", img: "https://images.unsplash.com/photo-1596515298514-638069678122?w=300" },
+            { name: "Fern (Nakay)", price: "60", unit: "Bundle", badge: "GI Tag", img: "https://images.unsplash.com/photo-1492496913980-50134c7a268a?w=300" },
+            { name: "Lemon", price: "5", unit: "Pc", badge: "GAP", img: "https://images.unsplash.com/photo-1590502593747-42a996133562?w=300" },
+            { name: "Banana", price: "120", unit: "Doz", badge: "Organic", img: "https://images.unsplash.com/photo-1571771894821-ad9902410947?w=300" },
+            { name: "Orange", price: "200", unit: "Kg", badge: "GI Tag", img: "https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=300" },
+            { name: "Curd (Datshi)", price: "180", unit: "Kg", badge: "GAP", img: "https://images.unsplash.com/photo-1559561853-08451507cbe7?w=300" },
+            { name: "Tumeric Powder", price: "100", unit: "Pkt", badge: "Organic", img: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=300" },
+            { name: "Coriander", price: "20", unit: "Bundle", badge: "GI Tag", img: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=300" },
+            { name: "Mint Leaves", price: "30", unit: "Bundle", badge: "GAP", img: "https://images.unsplash.com/photo-1601648764658-cf37e8c89b70?w=300" },
+            { name: "Dried Bitter Gourd", price: "300", unit: "Kg", badge: "Organic", img: "https://images.unsplash.com/photo-1449339044511-d14d2ba8294b?w=300" },
+            { name: "Cinnamon Sticks", price: "150", unit: "Pkt", badge: "GI Tag", img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300" }
+        ];
+
+        const grid = document.getElementById('product-grid');
+        const searchInput = document.getElementById('productSearch');
+        const categoryFilter = document.getElementById('categoryFilter');
+
+        // 2. COMBINED FILTER LOGIC
+        function updateDisplay() {
+            const searchText = searchInput.value.toLowerCase();
+            const selectedCat = categoryFilter.value;
+
+            const filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchText);
+                const matchesCategory = (selectedCat === "all") || (p.badge === selectedCat);
+                return matchesSearch && matchesCategory;
+            });
+
+            renderGrid(filtered);
+        }
+
+        function renderGrid(data) {
+            grid.innerHTML = "";
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="no-results">No products found matching your criteria.</div>`;
+                return;
+            }
+
+            grid.innerHTML = data.map(p => {
+                // Create a URL-friendly string of parameters
+                const params = new URLSearchParams({
+                    name: p.name,
+                    price: p.price,
+                    unit: p.unit,
+                    img: p.img,
+                    badge: p.badge || ""
+                }).toString();
+
+                return `
+                    <div class="card">
+                        <a href="Product/product.html?${params}" class="product-link" style="text-decoration: none;">
+                            ${p.badge ? `<span class="badge ${p.badge.toLowerCase().replace(' ', '-')}">${p.badge}</span>` : ''}
+                            <img src="${p.img}" alt="${p.name}">
+                            <div class="card-content">
+                                <h3>${p.name}</h3>
+                                <p class="price">Nu. ${p.price} /${p.unit}</p>
+                            </div>
+                        </a>
+                        <div class="card-content no-top">
+                            <div class="btn-group">
+                                <button class="add-cart" onclick="addToCart('${p.name}', '${p.price}', '${p.unit}', '${p.img}')">ADD TO CART</button>
+                                <button class="preorder" onclick="window.location.href='/Preorder/preorder.html'">PREORDER</button>
+                            </div>
+                        </div> 
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', updateDisplay);
+        categoryFilter.addEventListener('change', updateDisplay);
+
+        // CART LOGIC
+        const cartBadge = document.getElementById('cart-count');
+        let count = parseInt(localStorage.getItem('cartCount')) || 0;
+
+        function updateBadge() {
+            const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            const cartBadge = document.getElementById('cart-count');
+            
+            if (cartBadge) {
+                cartBadge.innerText = cart.length;
+                cartBadge.style.display = cart.length > 0 ? 'block' : 'none';
+            }
+        }
+
+        function addToCart(name, price, unit, img) {
+            let cartItems = JSON.parse(localStorage.getItem('drukCart')) || [];
+            
+            // Check if item already exists to increment quantity instead of adding new row
+            const existingItem = cartItems.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                // Add selected: true by default so they are ready for checkout
+                cartItems.push({ name, price, img, unit, qty: 1, selected: true });
+            }
+            
+            localStorage.setItem('drukCart', JSON.stringify(cartItems));
+            updateBadge();
+        }
+
+        // Initialize
+        updateDisplay();
+        updateBadge();
+    </script>
+    <script>
+        (function() {
+            // Find the product grid
+            const grid = document.querySelector('.product-grid');
+            
+            if (grid) {
+                // Convert the cards into an array
+                const cards = Array.from(grid.children);
+
+                // Shuffle the array using Fisher-Yates logic
+                for (let i = cards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    grid.appendChild(cards[j]); // Appending an existing element moves it!
+                }
+            }
+        })();
+    </script>
+
+</body>
+</html>

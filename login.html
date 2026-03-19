@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Druk Basket</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    :root {
+      --farmer-green: #27ae60;
+      --consumer-blue: #2980b9;
+      --accent-red: #ff5e5e;
+      --bg-light: #f4f7f6;
+      --card-white: #ffffff;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 5%;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      z-index: 100;
+    }
+
+    .navbar nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .main-logo { height: 40px; }
+
+    .page-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 450px;
+      background: var(--card-white);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .role-container { display: flex; gap: 15px; margin-bottom: 25px; }
+    .role-card {
+      flex: 1;
+      background: #fff;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s;
+      user-select: none;
+    }
+    .role-card img { width: 45px; margin-bottom: 8px; }
+    .role-card span { display: block; font-weight: 700; font-size: 0.75rem; }
+    .role-card.selected-farmer { border-color: var(--farmer-green); background: #f0fff4; }
+    .role-card.selected-consumer { border-color: var(--consumer-blue); background: #f0f7ff; }
+
+    .input-box {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .input-box input { border: none; background: transparent; outline: none; width: 100%; font-size: 1rem; }
+
+    .login-submit {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent-red);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    #face-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+    .scan-ring {
+      width: 200px;
+      height: 200px;
+      border: 4px solid var(--farmer-green);
+      border-radius: 50%;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .scan-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--farmer-green);
+      position: absolute;
+      animation: scan 2s infinite linear;
+    }
+    @keyframes scan {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
+    }
+
+    .talkback-controls {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2500;
+    }
+    .tb-btn {
+      border: none;
+      cursor: pointer;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #111;
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tb-btn small { font-weight: 600; opacity: 0.8; }
+    .tb-on { background: var(--farmer-green); }
+    .tb-off { background: #111; }
+    .tb-btn:active { transform: translateY(1px); }
+
+    .hint {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 10px;
+      line-height: 1.3;
+    }
+
+    /* OTP Panel */
+    .otp-panel {
+      background: #fafafa;
+      padding: 18px;
+      border-radius: 15px;
+      border: 1px dashed #ccc;
+      margin-bottom: 14px;
+    }
+    .otp-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .link-btn {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 800;
+      color: #2980b9;
+      padding: 0;
+    }
+    .link-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+    .demo-box {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      color: #856404;
+      font-size: 0.9rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo-container">
+      <img src="Images/logo.png" alt="Drukbasket Logo" class="main-logo" />
+    </div>
+    <nav>
+      <a href="/index.html">Marketplace</a>
+      <a href="/aboutUs.html">About Us</a>
+      <a href="/contactUs.html">Contact Us</a>
+    </nav>
+
+    <div class="user-actions">
+      <a href="/market-prices.html" style="text-decoration: none;">
+        <div class="live-logo-container">
+          <span class="market-price">View Current Market Prices</span>
+          <div class="recording-circle">
+            <div class="inner-dot"></div>
+            <div class="outer-ring"></div>
+          </div>
+        </div>
+      </a>
+
+      <a href="Dzongkha/index.html" style="text-decoration: none;">EN</a>
+
+      <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;"
+           onclick="window.location.href='/Addtocart/addToCart.html'">
+        <span class="cart" style="font-size: 1.5rem;">🛒</span>
+        <span id="cart-count" class="cart-badge">0</span>
+      </div>
+
+      <span class="notification">🔔</span>
+
+      <!-- ✅ FIXED: add id so JS can change LOG IN / LOG OUT -->
+      <a href="/login.html" class="login-btn-link" style="text-decoration:none;">
+        <button id="authBtn" class="login-btn" type="button">LOG IN</button>
+      </a>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="login-card">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <img src="/Images/logo.png" style="width: 60px; margin-bottom: 10px;" alt="Logo" />
+        <h2 style="margin: 0;">Welcome Back</h2>
+        <p style="color: #666; margin: 5px 0 0;">Secure access to your basket</p>
+      </div>
+
+      <div class="role-container">
+        <div class="role-card selected-farmer" id="role-farmer" onclick="setRole('farmer')" tabindex="0" role="button" aria-label="Supplier role">
+          <img src="https://cdn-icons-png.flaticon.com/512/2010/2010141.png" alt="Farmer" />
+          <span>FARMER or SUPPLIER</span>
+        </div>
+        <div class="role-card" id="role-consumer" onclick="setRole('consumer')" tabindex="0" role="button" aria-label="Buyer role">
+          <img src="https://cdn-icons-png.flaticon.com/512/3081/3081911.png" alt="Consumer" />
+          <span>CONSUMER or BUYER</span>
+        </div>
+      </div>
+
+      <div style="text-align: center; background: #fafafa; padding: 20px; border-radius: 15px; border: 1px dashed #ccc; margin-bottom: 20px;">
+        <button onclick="startFaceAuth()" style="background: none; border: none; cursor: pointer;" type="button" aria-label="Face login">
+          <img src="/Images/facial.png" style="width: 50px;" alt="Face" />
+          <p id="face-btn-text" style="margin: 5px 0 0; font-weight: bold; color: var(--farmer-green);">FACE LOGIN</p>
+        </button>
+      </div>
+
+      <p style="margin: 15px 0;"><b>OR</b></p>
+
+      <!-- ✅ OTP LOGIN (No PIN) -->
+      <div class="otp-panel" aria-label="OTP login panel">
+        <div class="input-box">
+          <span>📞</span>
+          <input id="otpPhone" type="tel" inputmode="numeric" placeholder="Phone Number" aria-label="Phone number for OTP" />
+        </div>
+
+        <button type="button" class="login-submit" style="background: var(--farmer-green);" onclick="sendOTP()">
+          SEND OTP
+        </button>
+
+        <div id="otpStep2" style="display:none; margin-top:12px;">
+          <div class="input-box">
+            <span>🔑</span>
+            <input id="otpCode" type="tel" inputmode="numeric" placeholder="Enter OTP" aria-label="Enter OTP code" />
+          </div>
+
+          <button type="button" class="login-submit" onclick="verifyOTP()">
+            VERIFY & ENTER
+          </button>
+
+          <div class="otp-actions">
+            <small id="otpHint" style="color:#666;">OTP sent. Please check SMS.</small>
+
+            <button id="resendBtn" class="link-btn" type="button" onclick="resendOTP()" disabled>
+              Resend (30s)
+            </button>
+          </div>
+
+          <div style="margin-top:8px;">
+            <button class="link-btn" type="button" onclick="callMeCode()">
+              📞 Call me with code (demo)
+            </button>
+          </div>
+
+          <div id="demoOtp" class="demo-box"></div>
+
+          <label style="display:flex; gap:10px; align-items:center; margin-top:12px; color:#333; font-weight:600;">
+            <input id="trustDevice" type="checkbox" checked />
+            Keep me logged in on this phone
+          </label>
+        </div>
+
+        <div class="hint">
+          Farmers friendly: only phone + OTP. No PIN needed.
+        </div>
+      </div>
+
+      <div class="hint">
+        If TalkBack is ON, tap any item and it will speak. You can also use Voice Commands.
+      </div>
+    </div>
+  </main>
+
+  <div id="face-modal">
+    <div class="scan-ring"><div class="scan-bar"></div></div>
+    <h2 id="status-text">Verifying...</h2>
+  </div>
+
+  <div class="talkback-controls">
+    <button id="talkbackToggle" class="tb-btn tb-off" type="button" onclick="toggleTalkBack()">
+      🔊 <span id="tbLabel">TalkBack: OFF</span>
+    </button>
+    <button id="voiceCmdBtn" class="tb-btn" type="button" onclick="toggleVoiceCommands()">
+      🎙️ <span id="vcLabel">Voice Commands</span> <small id="vcState">(OFF)</small>
+    </button>
+  </div>
+
+  <script>
+    // ---------------------------
+    // Role Selection
+    // ---------------------------
+    let currentRole = 'farmer';
+
+    function setRole(role) {
+      currentRole = role;
+      document.getElementById('role-farmer').className = role === 'farmer' ? 'role-card selected-farmer' : 'role-card';
+      document.getElementById('role-consumer').className = role === 'consumer' ? 'role-card selected-consumer' : 'role-card';
+      document.getElementById('face-btn-text').style.color = role === 'farmer' ? 'var(--farmer-green)' : 'var(--consumer-blue)';
+      speak(role === 'farmer' ? "Supplier selected. You will sell products." : "Buyer selected. You will buy products.");
+    }
+
+    // ---------------------------
+    // Trusted Device + Redirect
+    // ---------------------------
+    const TRUST_DAYS = 60;
+
+    function redirectAfterLogin(role) {
+      // Use exact filenames
+      if (role === 'farmer') window.location.href = '/supplierIndex.html';
+      else window.location.href = '/index.html'; // your buyer flow
+    }
+
+    function isTrustedSessionValid() {
+      const exp = Number(localStorage.getItem('sessionExpiry') || 0);
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      if (!loggedIn) return false;
+      if (!exp) return true; // if no expiry set, treat as valid
+      return Date.now() < exp;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAuthButton();
+      if (isTrustedSessionValid()) {
+        const role = localStorage.getItem('userRole') || 'farmer';
+        redirectAfterLogin(role);
+      }
+    });
+
+    // ---------------------------
+    // Face Auth (demo)
+    // ---------------------------
+    function startFaceAuth() {
+      const modal = document.getElementById('face-modal');
+      const status = document.getElementById('status-text');
+
+      modal.style.display = 'flex';
+      status.innerText = "Verifying...";
+      status.style.color = "#ffffff";
+
+      setTimeout(() => {
+        status.innerText = "Verified! ✅";
+        status.style.color = "#2ecc71";
+      }, 1200);
+
+      setTimeout(() => {
+        modal.style.display = 'none';
+        // treat face auth as success login
+        finalizeLogin();
+      }, 1800);
+    }
+
+    function finalizeLogin() {
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userRole', currentRole);
+
+      const trust = document.getElementById('trustDevice');
+      if (trust && trust.checked) {
+        const expiry = Date.now() + TRUST_DAYS * 24 * 60 * 60 * 1000;
+        localStorage.setItem('sessionExpiry', String(expiry));
+      } else {
+        localStorage.removeItem('sessionExpiry');
+      }
+
+      renderAuthButton();
+      redirectAfterLogin(currentRole);
+    }
+
+    // ---------------------------
+    // OTP (demo)
+    // ---------------------------
+    let generatedOTP = null;
+    let resendTimer = null;
+    let resendLeft = 30;
+
+    function sendOTP() {
+      const phone = document.getElementById('otpPhone').value.trim();
+      if (!phone || phone.length < 7) {
+        alert("Enter a valid phone number");
+        speak("Please enter a valid phone number.");
+        return;
+      }
+
+      // Demo OTP (replace with real SMS API)
+      generatedOTP = String(Math.floor(100000 + Math.random() * 900000));
+      document.getElementById('otpStep2').style.display = 'block';
+
+      // DEMO display
+      const demo = document.getElementById('demoOtp');
+      demo.style.display = 'block';
+      demo.textContent = "DEMO OTP (remove later): " + generatedOTP;
+
+      document.getElementById('otpHint').textContent = "OTP sent. Please check SMS.";
+      speak("OTP sent. Please check your SMS and enter the code.");
+
+      startResendCountdown();
+    }
+
+    function resendOTP() {
+      sendOTP();
+    }
+
+    function startResendCountdown() {
+      const btn = document.getElementById('resendBtn');
+      resendLeft = 30;
+      btn.disabled = true;
+      btn.textContent = `Resend (${resendLeft}s)`;
+
+      if (resendTimer) clearInterval(resendTimer);
+      resendTimer = setInterval(() => {
+        resendLeft--;
+        btn.textContent = `Resend (${resendLeft}s)`;
+        if (resendLeft <= 0) {
+          clearInterval(resendTimer);
+          btn.disabled = false;
+          btn.textContent = "Resend";
+        }
+      }, 1000);
+    }
+
+    function callMeCode() {
+      // Demo only: just speak the OTP aloud
+      if (!generatedOTP) {
+        speak("Please send OTP first.");
+        return;
+      }
+      speak("Your code is " + generatedOTP.split("").join(" "));
+      document.getElementById('otpHint').textContent = "Call delivered (demo). Enter the code.";
+    }
+
+    function verifyOTP() {
+      const code = document.getElementById('otpCode').value.trim();
+      if (!code) {
+        alert("Enter OTP");
+        speak("Please enter the OTP code.");
+        return;
+      }
+      if (code !== generatedOTP) {
+        alert("Wrong OTP. Try again.");
+        speak("Wrong code. Please try again.");
+        return;
+      }
+
+      // Success
+      finalizeLogin();
+    }
+
+    // ---------------------------
+    // Navbar LOG IN / LOG OUT
+    // ---------------------------
+    function renderAuthButton() {
+      const btn = document.getElementById('authBtn');
+      if (!btn) return;
+
+      const loggedIn = isTrustedSessionValid();
+
+      if (loggedIn) {
+        btn.textContent = 'LOG OUT';
+        btn.onclick = (e) => {
+          e.preventDefault();
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('sessionExpiry');
+          renderAuthButton();
+          window.location.href = '/login.html';
+        };
+      } else {
+        btn.textContent = 'LOG IN';
+        btn.onclick = () => window.location.href = '/login.html';
+      }
+    }
+
+    // ---------------------------
+    // TalkBack (Text-to-Speech)
+    // ---------------------------
+    let talkBackEnabled = false;
+    let preferredLang = 'en-US';
+
+    function speak(text) {
+      if (!talkBackEnabled) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = preferredLang;
+        utter.rate = 1;
+        utter.pitch = 1;
+        window.speechSynthesis.speak(utter);
+      } catch (e) {
+        console.log("TTS not supported:", e);
+      }
+    }
+
+    function toggleTalkBack() {
+      talkBackEnabled = !talkBackEnabled;
+      const btn = document.getElementById('talkbackToggle');
+      const label = document.getElementById('tbLabel');
+
+      if (talkBackEnabled) {
+        btn.classList.remove('tb-off');
+        btn.classList.add('tb-on');
+        label.textContent = "TalkBack: ON";
+        speak("TalkBack is on. Tap any button or field and I will guide you.");
+        setTimeout(() => speak("Choose Supplier or Buyer. Then send OTP and verify."), 700);
+      } else {
+        btn.classList.remove('tb-on');
+        btn.classList.add('tb-off');
+        label.textContent = "TalkBack: OFF";
+        window.speechSynthesis?.cancel?.();
+      }
+    }
+
+    // Helpful speech on focus
+    document.addEventListener('DOMContentLoaded', () => {
+      const otpPhone = document.getElementById('otpPhone');
+      const otpCode = document.getElementById('otpCode');
+      const roleFarmer = document.getElementById('role-farmer');
+      const roleConsumer = document.getElementById('role-consumer');
+
+      if (otpPhone) otpPhone.addEventListener('focus', () => speak("Phone number. Type your phone number."));
+      if (otpCode) otpCode.addEventListener('focus', () => speak("OTP code. Type the code you received."));
+
+      if (roleFarmer) roleFarmer.addEventListener('keydown', (e) => { if (e.key === 'Enter') setRole('farmer'); });
+      if (roleConsumer) roleConsumer.addEventListener('keydown', (e) => { if (e.key === 'Enter') setRole('consumer'); });
+
+      if (roleFarmer) roleFarmer.addEventListener('click', () => speak("Supplier."));
+      if (roleConsumer) roleConsumer.addEventListener('click', () => speak("Buyer."));
+    });
+
+    // ---------------------------
+    // Voice Commands (Speech-to-Text)
+    // ---------------------------
+    let recognition = null;
+    let voiceCommandsOn = false;
+
+    function buildRecognition() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) return null;
+
+      const r = new SR();
+      r.lang = preferredLang;
+      r.continuous = true;
+      r.interimResults = false;
+
+      r.onresult = (event) => {
+        const last = event.results[event.results.length - 1];
+        const text = (last[0].transcript || "").toLowerCase().trim();
+        handleVoiceCommand(text);
+      };
+
+      r.onerror = () => {
+        speak("Voice commands error. Please try again.");
+        stopVoiceCommands();
+      };
+
+      r.onend = () => {
+        if (voiceCommandsOn) {
+          try { r.start(); } catch (e) {}
+        }
+      };
+
+      return r;
+    }
+
+    function toggleVoiceCommands() {
+      if (!talkBackEnabled) {
+        talkBackEnabled = true;
+        document.getElementById('talkbackToggle').classList.remove('tb-off');
+        document.getElementById('talkbackToggle').classList.add('tb-on');
+        document.getElementById('tbLabel').textContent = "TalkBack: ON";
+      }
+
+      if (!recognition) recognition = buildRecognition();
+      if (!recognition) {
+        speak("Voice commands are not supported on this browser.");
+        return;
+      }
+
+      voiceCommandsOn ? stopVoiceCommands() : startVoiceCommands();
+    }
+
+    function startVoiceCommands() {
+      voiceCommandsOn = true;
+      document.getElementById('vcState').textContent = "(ON)";
+      speak("Voice commands on. Say: supplier, buyer, send otp, verify, or login.");
+      try { recognition.start(); } catch (e) {}
+    }
+
+    function stopVoiceCommands() {
+      voiceCommandsOn = false;
+      document.getElementById('vcState').textContent = "(OFF)";
+      try { recognition.stop(); } catch (e) {}
+      speak("Voice commands off.");
+    }
+
+    function handleVoiceCommand(text) {
+      console.log("Heard:", text);
+
+      if (text.includes("supplier") || text.includes("farmer")) {
+        setRole('farmer'); return;
+      }
+      if (text.includes("buyer") || text.includes("consumer")) {
+        setRole('consumer'); return;
+      }
+      if (text.includes("face")) {
+        startFaceAuth(); return;
+      }
+      if (text.includes("send otp")) {
+        sendOTP(); return;
+      }
+      if (text.includes("verify")) {
+        verifyOTP(); return;
+      }
+      if (text.includes("phone")) {
+        const digits = text.replace(/[^0-9]/g, "");
+        const otpPhone = document.getElementById('otpPhone');
+        if (otpPhone) otpPhone.value = digits;
+        speak("Phone entered."); return;
+      }
+
+      speak("Sorry, I did not understand. Say supplier, buyer, send otp, verify, or face login.");
+    }
+  </script>
+
+</body>
+</html>

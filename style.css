@@ -1,0 +1,322 @@
+/* General Reset & Typography */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f8f9fa; /* Light grey background makes white cards pop */
+    color: #333;
+}
+
+.logo {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: #e63946; /* Brand Red */
+    text-transform: lowercase;
+}
+
+nav a {
+    text-decoration: none;
+    color: #555;
+    margin: 0 15px;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #e63946;
+}
+
+/* Marketing-Focused Search Bar */
+.filter-bar {
+    display: flex;
+    gap: 0; /* Joined appearance */
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.filter-bar input, .filter-bar select {
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+.filter-bar input {
+    flex-grow: 1;
+    border-radius: 8px 0 0 8px;
+}
+
+.filter-bar select {
+    border-left: none;
+    background-color: #fff;
+}
+
+.search-btn {
+    background-color: #ff5e5e;
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.search-btn:hover {
+    background-color: #d94545;
+}
+
+/* Product Grid */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto 50px auto;
+    padding: 0 20px;
+}
+
+/* The Card Style */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #edf2f7;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.card-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #2d3436;
+}
+
+.price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 15px;
+}
+
+/* Marketing Buttons */
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-group button {
+    flex: 1;
+    padding: 10px 5px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.add-cart {
+    background: #fff;
+    border: 1.5px solid #2d3436;
+    color: #2d3436;
+}
+
+.add-cart:hover {
+    background: #2d3436;
+    color: #fff;
+}
+
+.preorder {
+    background: #f1f2f6;
+    border: 1.5px solid transparent;
+    color: #57606f;
+}
+
+.preorder:hover {
+    background: #dfe4ea;
+}
+
+/* 1. Make the Header stay at the top */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #ffffff;
+    border-bottom: 1px solid #eee;
+}
+
+/* 2. Make the Filter Bar stay below the header */
+.filter-bar {
+    position: sticky;
+    top: 70px; /* Adjust based on your navbar height */
+    z-index: 999;
+    background: #f8f9fa;
+    padding: 15px 5%;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 3. Ensure the body allows scrolling */
+body {
+    overflow-y: auto;
+    height: 100vh;
+}
+
+/* 4. Smooth Scrolling for better UX */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 5. Optional: Style the scrollbar to look modern */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ff5e5e; /* Matches your brand color */
+}
+/* Container for the logo */
+.logo-container {
+    display: flex;
+    align-items: center;
+    padding-left: 0; /* Ensures it stays to the far left */
+}
+
+/* Logo Sizing */
+.main-logo {
+    height: 45px; /* Adjust this height based on your logo design */
+    width: auto;  /* Maintains aspect ratio */
+    object-fit: contain;
+    cursor: pointer;
+}
+
+
+/* Styling the 'Live Market Price' text to match the image */
+
+.login-btn {
+    padding: 8px 20px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 4%;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    height: 80px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* Logic to center the middle nav */
+.logo-container, .user-actions {
+    flex: 1; 
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    flex: 2; /* Takes more space to stay centered */
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.user-actions {
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+/* Image Logo size */
+.main-logo {
+    height: 60px; /* Adjust based on your image height */
+    width: auto;
+}
+
+/* Nav Link Styling */
+.nav-links a {
+    text-decoration: none;
+    color: #444;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+/* Right side features */
+.market-price {
+    color: #ff5e5e;
+    font-size: 1rem;
+}
+
+.login-btn {
+    text-decoration: none;
+    border: 1px solid #ddd;
+    padding: 8px 25px;
+    color: #000;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+/* --- Desktop: Hide Hamburger --- */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 5px;
+}
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    border-radius: 2px;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: #ff3b3b; /* Matches your 'Live' red */
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: none; /* Hidden when cart is empty */
+}
+
+
+

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Prices | Druk Basket</title>
+    <script src="/auth.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Header Logo Styling */
+        .live-logo-container { display: inline-flex; align-items: center; gap: 4px; }
+        .recording-circle { position: relative; width: 20px; height: 20px; animation: simplePulse 1.5s infinite; }
+        .inner-dot { width: 12px; height: 12px; background: #ff0000; border-radius: 50%; position: absolute; top: 4px; left: 4px; }
+        .outer-ring { width: 20px; height: 20px; border: 1px solid #ff0000; border-radius: 50%; }
+        @keyframes simplePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* Market Table Styling */
+        .market-container { max-width: 1100px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .market-header { margin-bottom: 30px; }
+        .market-header h1 { font-size: 1.6rem; margin-bottom: 5px; color: #333; }
+        .market-header p { color: #777; font-size: 0.95rem; }
+        .highlight-text { color: #ff4d4d; font-weight: bold; }
+
+        /* Search Bar */
+        .search-wrapper { margin-bottom: 20px; }
+        #marketSearch { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; }
+
+        .price-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .price-row:hover { background-color: #fcfcfc; }
+        .item-name { font-weight: 600; color: #444; flex: 1; }
+        .price-group { display: flex; gap: 15px; flex-wrap: wrap; }
+
+        .price-card { background: #fff9f0; border: 1px solid #ffe8cc; border-radius: 8px; padding: 10px; min-width: 160px; text-align: center; }
+        .price-val { display: block; color: #e67e22; font-weight: bold; font-size: 0.9rem; }
+        .price-date { font-size: 0.7rem; color: #f39c12; font-weight: bold; }
+
+        .out-of-season { background: #fff5f5; border-color: #ffdada; }
+        .out-of-season .price-val { color: #ff4d4d; }
+        .out-of-season .price-date { color: #ff9999; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .price-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .price-group { width: 100%; }
+            .price-card { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+        </div>
+        <nav>
+            <a href="/index.html">Marketplace</a>
+            <a href="/aboutUs.html">About Us</a>
+            <a href="/contactUs.html">Contact Us</a>
+        </nav>
+        <div class="user-actions">
+            <a href="/market-prices.html" style="text-decoration: none;">
+                <div class="live-logo-container">
+                    <span class="market-price">View Current Market Prices</span>
+                    <div class="recording-circle"><div class="inner-dot"></div><div class="outer-ring"></div></div>
+                </div>
+            </a>
+            <a href="Dzongkha/index.html" style="text-decoration: none;">EN</a>
+            
+            <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;">
+                <span class="cart" style="font-size: 1.5rem;">🛒</span>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+
+            <span class="notification">🔔</span>
+            <a href="/login.html" class="login-btn-link">
+                <button class="login-btn">LOG IN</button>
+            </a>
+        </div>
+    </header> 
+
+    <main class="market-container">
+        <div class="market-header">
+            <h1>Market Price This Week</h1>
+            <p>These are the market prices for various farm produce at the <span class="highlight-text">Thimphu Centenary Farmers Market</span></p>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" id="marketSearch" placeholder="Search for a vegetable, fruit or product...">
+        </div>
+
+        <div class="price-list" id="priceListContainer">
+            </div>
+    </main>
+
+    <script>
+        const marketData = [
+            { name: "Apple Golden Delicious", current: "300/KG", prev: "150/KG", season: true },
+            { name: "Apple Red Delicious (Big)", current: "250/KG", prev: "150/KG", season: true },
+            { name: "Apricot", current: "OUT OF SEASON", prev: "OUT OF SEASON", season: false },
+            { name: "Local Potato (Red)", current: "45/KG", prev: "40/KG", season: true },
+            { name: "Organic Green Chilli", current: "120/KG", prev: "100/KG", season: true },
+            { name: "Asparagus (Hybrid)", current: "120/BUNDLE", prev: "OUT OF SEASON", season: true },
+            { name: "Areca Nut (Doma, Brown)", current: "OUT OF SEASON", prev: "OUT OF SEASON", season: false },
+            { name: "Balsam Apple", current: "80/KG", prev: "70/KG", season: true },
+            { name: "Banana (Local)", current: "100/DOZ", prev: "90/DOZ", season: true },
+            { name: "Beans (Flat)", current: "90/KG", prev: "80/KG", season: true },
+            { name: "Beetroot", current: "70/KG", prev: "60/KG", season: true },
+            { name: "Bitter Gourd", current: "100/KG", prev: "90/KG", season: true },
+            { name: "Broccoli", current: "110/KG", prev: "100/KG", season: true },
+            { name: "Cabbage", current: "40/KG", prev: "35/KG", season: true },
+            { name: "Cardamom (Green)", current: "1200/KG", prev: "1100/KG", season: true },
+            { name: "Carrot (Local)", current: "80/KG", prev: "70/KG", season: true },
+            { name: "Cauliflower", current: "90/KG", prev: "85/KG", season: true },
+            { name: "Chayote (Ishkus)", current: "OUT OF SEASON", prev: "50/KG", season: false },
+            { name: "Coriander (Fresh)", current: "20/BUNDLE", prev: "15/BUNDLE", season: true },
+            { name: "Cucumber (Local)", current: "60/KG", prev: "50/KG", season: true },
+            { name: "Dried Beef (Sukam)", current: "1300/KG", prev: "1250/KG", season: true },
+            { name: "Eggplant (Brinjal)", current: "70/KG", prev: "65/KG", season: true },
+            { name: "Eggs (Free Range)", current: "450/TRAY", prev: "420/TRAY", season: true },
+            { name: "Garlic (Local)", current: "220/KG", prev: "200/KG", season: true },
+            { name: "Ginger", current: "100/KG", prev: "90/KG", season: true },
+            { name: "Guava", current: "OUT OF SEASON", prev: "120/KG", season: false },
+            { name: "Honey (Pure Wild)", current: "850/BOTTLE", prev: "800/BOTTLE", season: true },
+            { name: "Lettuce", current: "40/BUNDLE", prev: "30/BUNDLE", season: true },
+            { name: "Maize (Fresh Cob)", current: "OUT OF SEASON", prev: "20/PC", season: false },
+            { name: "Mango (Local)", current: "OUT OF SEASON", prev: "180/KG", season: false },
+            { name: "Mint Leaves", current: "25/BUNDLE", prev: "20/BUNDLE", season: true },
+            { name: "Mushroom (Oyster)", current: "250/KG", prev: "200/KG", season: true },
+            { name: "Mushroom (Shiitake)", current: "500/KG", prev: "450/KG", season: true },
+            { name: "Mustard Greens (Rayu)", current: "40/BUNDLE", prev: "35/BUNDLE", season: true },
+            { name: "Okra (Ladyfinger)", current: "110/KG", prev: "100/KG", season: true },
+            { name: "Onion (Red)", current: "60/KG", prev: "55/KG", season: true },
+            { name: "Orange (Mandarin)", current: "OUT OF SEASON", prev: "150/KG", season: false },
+            { name: "Papaya", current: "120/KG", prev: "100/KG", season: true },
+            { name: "Pear (Local)", current: "OUT OF SEASON", prev: "140/KG", season: false },
+            { name: "Peas (Green)", current: "150/KG", prev: "130/KG", season: true },
+            { name: "Persimmon", current: "OUT OF SEASON", prev: "160/KG", season: false },
+            { name: "Pumpkin", current: "50/KG", prev: "45/KG", season: true },
+            { name: "Radish (White)", current: "40/KG", prev: "35/KG", season: true },
+            { name: "Red Rice (Premium)", current: "1100/25KG", prev: "1050/25KG", season: true },
+            { name: "Spinach (Local)", current: "50/BUNDLE", prev: "40/BUNDLE", season: true },
+            { name: "Spring Onion", current: "30/BUNDLE", prev: "25/BUNDLE", season: true },
+            { name: "Sweet Potato", current: "90/KG", prev: "80/KG", season: true },
+            { name: "Tomato (Local)", current: "90/KG", prev: "80/KG", season: true },
+            { name: "Turnip", current: "50/KG", prev: "40/KG", season: true },
+            { name: "Walnut", current: "400/KG", prev: "350/KG", season: true },
+            { name: "Yak Cheese (Datshi)", current: "500/KG", prev: "480/KG", season: true }
+        ];
+
+        const container = document.getElementById('priceListContainer');
+        const searchInput = document.getElementById('marketSearch');
+        const cartBadge = document.getElementById('cart-count');
+
+        // 1. RENDER MARKET PRICES
+        function renderPrices(data) {
+            container.innerHTML = '';
+            data.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'price-row';
+                
+                const currentClass = item.current === "OUT OF SEASON" ? "price-card out-of-season" : "price-card";
+                const prevClass = item.prev === "OUT OF SEASON" ? "price-card out-of-season" : "price-card";
+
+                row.innerHTML = `
+                    <span class="item-name">${item.name}</span>
+                    <div class="price-group">
+                        <div class="${currentClass}">
+                            <span class="price-val">${item.current === "OUT OF SEASON" ? "" : "NU. "}${item.current}</span>
+                            <span class="price-date">APR 26TH - MAY 3RD</span>
+                        </div>
+                        <div class="${prevClass}">
+                            <span class="price-val">${item.prev === "OUT OF SEASON" ? "" : "NU. "}${item.prev}</span>
+                            <span class="price-date">OCT 5TH - OCT 12TH</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // 2. UNIFIED CART BADGE LOGIC
+        function updateBadge() {
+            // We read the actual array length instead of a standalone number
+            const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            if (cart.length > 0) {
+                cartBadge.innerText = cart.length;
+                cartBadge.style.display = 'block';
+            } else {
+                cartBadge.style.display = 'none';
+            }
+        }
+
+        // 3. EVENT LISTENERS
+        
+        // Search Functionality
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = marketData.filter(item => item.name.toLowerCase().includes(term));
+            renderPrices(filtered);
+        });
+
+        // Listen for changes from other tabs (like when deleting in preorder.html)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'drukCart') {
+                updateBadge();
+            }
+        });
+
+        // Update badge when coming back via the browser "Back" button
+        window.addEventListener('pageshow', updateBadge);
+
+        // Make the cart icon clickable
+        document.querySelector('.cart-container').addEventListener('click', () => {
+            window.location.href = '/Preorder/preorder.html';
+        });
+
+        // INITIALIZE
+        renderPrices(marketData);
+        updateBadge();
+    </script>
+</body>
+</html>

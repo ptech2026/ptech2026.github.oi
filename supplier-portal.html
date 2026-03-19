@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Farmer Portal | Druk Basket Demo</title>
+    <script src="/auth.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        .portal-card { max-width: 600px; margin: 30px auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .section-title { color: #2ecc71; border-left: 5px solid #2ecc71; padding-left: 10px; margin: 20px 0; font-weight: 600; }
+        
+        /* Section 1: Image Uploader */
+        .image-uploader { 
+            width: 100%; height: 200px; border: 3px dashed #ddd; border-radius: 15px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; overflow: hidden; position: relative; background: #fafafa;
+        }
+        #image-preview { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+        /* Section 3: Pictorial Map Design */
+        .map-visual {
+            width: 100%; height: 220px; background: #e8f5e9; border-radius: 15px;
+            position: relative; overflow: hidden; cursor: pointer; border: 2px solid #2ecc71;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .map-img {
+            position: absolute; width: 100%; height: 100%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Bhutan_location_map.svg/800px-Bhutan_location_map.svg.png');
+            background-size: cover; background-position: center; opacity: 0.3; filter: grayscale(1); transition: 0.5s;
+        }
+        .radar-scan {
+            position: absolute; width: 80px; height: 80px; background: rgba(46, 204, 113, 0.2);
+            border: 2px solid #2ecc71; border-radius: 50%; display: none;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+        .map-pin { position: absolute; font-size: 3rem; display: none; z-index: 10; transform: translateY(-20px); }
+        .map-text { position: relative; z-index: 5; font-weight: bold; color: #2d3436; text-align: center; }
+
+        /* Section 4: Voice Box */
+        .voice-box { background: #f8f9fa; padding: 20px; border-radius: 15px; text-align: center; }
+        .record-btn { background: #e74c3c; color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; }
+        .record-btn.recording { animation: shake 0.5s infinite; background: #c0392b; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 50% { transform: rotate(5deg); } 100% { transform: rotate(0deg); } }
+
+        /* Inputs & Buttons */
+        input, select { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
+        .gps-data { background: #2d3436; color: #00ff88; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 0.85rem; margin-top: 5px; display: none; }
+        .submit-btn { width: 100%; background: #2ecc71; color: white; border: none; padding: 20px; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 25px; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3); }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+        </div>
+        <nav>
+            <a href="/supplierIndex.html">Marketplace</a>
+            <a href="/aboutUs.html">About Us</a>
+            <a href="/contactUs.html">Contact Us</a>
+            <a href="/supplier-portal.html" class="nav-supplier-btn">Supplier Portal</a>
+        </nav>
+
+        <div class="user-actions">
+            <a href="/market-prices.html" style="text-decoration: none;">
+                <div class="live-logo-container">
+                    <span class="market-price">View Current Market Prices</span>
+                    <div class="recording-circle">
+                        <div class="inner-dot"></div>
+                        <div class="outer-ring"></div>
+                    </div>
+                </div>
+            </a>
+            <a href="Dzongkha/index.html" style="text-decoration: none;">EN</a>
+
+            <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;"
+                onclick="window.location.href='/Addtocart/addToCart.html'">
+                <span class="cart" style="font-size: 1.5rem;">🛒</span>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+
+            <span class="notification">🔔</span>
+            <a href="/login.html" class="login-btn-link">
+                <button class="login-btn">LOG IN</button>
+            </a>
+        </div>
+    </header>
+
+    <div class="portal-card">
+        <h1 style="text-align: center;">👨‍🌾 Farmer Product Entry</h1>
+        
+        <h3 class="section-title">1. Product Photo</h3>
+        <div class="image-uploader" onclick="simulateCapture()">
+            <div id="upload-placeholder">
+                <span style="font-size: 3rem;">📸</span>
+                <p>Tap to take photo</p>
+            </div>
+            <img id="image-preview">
+        </div>
+
+        <h3 class="section-title">2. Basic Details</h3>
+        <input type="text" id="pName" placeholder="What are you selling? (e.g. Red Rice)">
+        <div style="display:flex; gap:10px;">
+            <input type="number" id="pPrice" placeholder="Price (Nu.)">
+            <input type="text" id="pUnit" placeholder="Unit (Kg/Box)">
+        </div>
+
+        <h3 class="section-title">3. Farm Location (GPS)</h3>
+        <div class="map-visual" onclick="startGpsScan()">
+            <div class="map-img" id="mapBg"></div>
+            <div class="radar-scan" id="radar"></div>
+            <div class="map-pin" id="pin">📍</div>
+            <div class="map-text" id="mapPrompt">TAP TO SCAN YOUR FARM</div>
+        </div>
+
+        <div class="gps-data" id="gpsData">
+            🛰️ SATELLITE LINK ACTIVE:<br>
+            LAT: <span id="latDisplay">--</span> | LON: <span id="lonDisplay">--</span>
+        </div>
+
+        <input type="text" id="pLocation" placeholder="Dzongkhag (Auto-filled)" readonly>
+        <input type="text" id="pGewog" placeholder="Gewog/Village (Auto-filled)" readonly>
+
+        <h3 class="section-title">4. Voice Description</h3>
+        <div class="voice-box">
+            <button id="recordBtn" class="record-btn" onclick="simulateVoice()">🎤</button>
+            <p id="record-status" style="margin-top:10px;">Tap to record details</p>
+            <audio id="audioPlayback" controls style="display:none; margin: 15px auto 0; width: 100%;"></audio>
+        </div>
+
+        <button class="submit-btn" onclick="finalizeListing()">SUBMIT PRODUCT NOW</button>
+    </div>
+
+<script>
+    let capturedLat = null;
+    let capturedLon = null;
+
+    // --- Simulation 1: Photo ---
+    function simulateCapture() {
+        const preview = document.getElementById('image-preview');
+        const placeholder = document.getElementById('upload-placeholder');
+        // High quality demo image
+        preview.src = "Images/Red Rice (Premium).jpg";
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+        
+        // Auto-fill names for demo flow
+        document.getElementById('pName').value = "Organic Red Rice";
+        document.getElementById('pPrice').value = "150";
+        document.getElementById('pUnit').value = "Kg";
+    }
+
+    // --- Simulation 3: Pictorial GPS Scan ---
+    function startGpsScan() {
+        const radar = document.getElementById('radar');
+        const pin = document.getElementById('pin');
+        const mapBg = document.getElementById('mapBg');
+        const text = document.getElementById('mapPrompt');
+        const gpsBox = document.getElementById('gpsData');
+
+        text.innerText = "LINKING TO SATELLITE...";
+        radar.style.display = "block";
+        mapBg.style.filter = "grayscale(0)";
+        mapBg.style.opacity = "1";
+
+        setTimeout(() => {
+            radar.style.display = "none";
+            pin.style.display = "block";
+            text.style.display = "none";
+            
+            // Simulated Coordinates for Bhutan
+            capturedLat = 27.4728;
+            capturedLon = 89.6393;
+            
+            document.getElementById('latDisplay').innerText = capturedLat;
+            document.getElementById('lonDisplay').innerText = capturedLon;
+            document.getElementById('pLocation').value = "Thimphu";
+            document.getElementById('pGewog').value = "Chang Gewog";
+            
+            gpsBox.style.display = "block";
+        }, 2000);
+    }
+
+    // --- Simulation 4: Voice Recording ---
+    function simulateVoice() {
+        const btn = document.getElementById('recordBtn');
+        const status = document.getElementById('record-status');
+        const audio = document.getElementById('audioPlayback');
+
+        btn.classList.add('recording');
+        status.innerText = "Recording Farmer Voice...";
+
+        setTimeout(() => {
+            btn.classList.remove('recording');
+            btn.style.background = "#2ecc71";
+            btn.innerText = "✅";
+            status.innerText = "Recording Saved Successfully!";
+            audio.style.display = "block";
+            audio.src = "https://www.w3schools.com/html/horse.ogg"; // Demo audio
+        }, 2500);
+    }
+
+    function finalizeListing() {
+        if(!capturedLat) {
+            alert("Please tap the map to locate your farm first!");
+            return;
+        }
+        alert("Tashi Delek! Product Has been submitted with GPS (" + capturedLat + ", " + capturedLon + ") and you will soon be contacted");
+        window.location.href='SupplierIndex.html'
+    }
+</script>
+
+</body>
+</html>

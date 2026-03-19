@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style.css">
+  <title>Feedback</title>
+  <style>
+    :root{--bg:#f4f6f6;--card:#fff;--text:#1f2a2e;--muted:#6b7b83;--border:rgba(0,0,0,.06);--shadow:0 12px 30px rgba(16,24,40,.08);--radius:14px;
+      --nav-bg:#fbf7ef;--nav-border:rgba(0,0,0,.08);--nav-active-bg:#dfeee2;--nav-active-text:#0b6b2e;--ok:#2ecc71;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .nav-wrap{background:var(--nav-bg);border-bottom:1px solid var(--nav-border);position:sticky;top:0;z-index:10}
+    .nav{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:16px}
+    .nav-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .brand{font-weight:800;margin-right:8px;color:#183028}
+    .nav a{text-decoration:none;color:#2a2a2a;padding:10px 18px;border-radius:12px;font-weight:600}
+    .nav a:hover{background:rgba(0,0,0,.04)}
+    .nav a.active{background:var(--nav-active-bg);color:var(--nav-active-text)}
+    .container{max-width:1180px;margin:26px auto;padding:0 18px 30px}
+    h1{margin:0 0 14px;font-size:36px}
+    .sub{color:var(--muted);font-weight:600;margin-bottom:18px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    label{font-weight:800;display:block;margin:12px 0 6px}
+    input,select,textarea{width:100%;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-weight:700;outline:none;background:#fff}
+    textarea{min-height:120px;resize:vertical;font-weight:600}
+    .btn{margin-top:14px;border:none;border-radius:12px;padding:12px 14px;font-weight:900;cursor:pointer;background:var(--ok);color:#fff}
+    .btn:active{transform:scale(.99)}
+    .item{padding:12px 10px;border-bottom:1px solid rgba(0,0,0,.06)}
+    .item:last-child{border-bottom:none}
+    .meta{color:var(--muted);font-weight:700;font-size:13px;margin-top:4px}
+    @media(max-width:1100px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-container">
+        <img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+      </div>
+
+      <div class="nav-left">
+        <a class="active" href="home.html">Home</a>
+        <a href="team.html">Our Team</a>
+        <a href="news.html">News</a>
+        <a href="stories.html">Stories</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div class="nav-right">
+        <a href="staff.html">Staff Area</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Feedback</h1>
+    <div class="sub">Collect suggestions and issues. (This is front-end only; later connect to API.)</div>
+
+    <div class="grid">
+      <div class="card">
+        <form id="form">
+          <label>Name</label>
+          <input id="name" required placeholder="Your name" />
+
+          <label>Type</label>
+          <select id="type">
+            <option>Suggestion</option>
+            <option>Issue</option>
+            <option>Feature Request</option>
+          </select>
+
+          <label>Message</label>
+          <textarea id="msg" required placeholder="Write your feedback..."></textarea>
+
+          <button class="btn" type="submit">Submit Feedback</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:900;font-size:18px;margin-bottom:8px;">Recent Feedback</div>
+        <div id="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("form");
+    const list = document.getElementById("list");
+
+    const feedback = [
+      { name:"User A", type:"Suggestion", msg:"Add download report option in dashboard.", date:"2026-02-10" },
+      { name:"User B", type:"Issue", msg:"Sometimes transactions list scroll is too fast.", date:"2026-02-09" },
+    ];
+
+    function render(){
+      list.innerHTML = feedback.map(f=>`
+        <div class="item">
+          <div style="font-weight:900">${f.type} — ${f.name}</div>
+          <div class="meta">${f.date}</div>
+          <div style="margin-top:8px;line-height:1.5">${f.msg}</div>
+        </div>
+      `).join("") || "No feedback yet.";
+    }
+
+    form.addEventListener("submit",(e)=>{
+      e.preventDefault();
+      const now = new Date().toISOString().slice(0,10);
+      feedback.unshift({
+        name: document.getElementById("name").value.trim(),
+        type: document.getElementById("type").value,
+        msg: document.getElementById("msg").value.trim(),
+        date: now
+      });
+      form.reset();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

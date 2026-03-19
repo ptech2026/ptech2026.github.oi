@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title> Phone Login | Druk Basket</title>
+    <style>
+        :root {
+            --farmer-green: #27ae60;
+            --consumer-blue: #2980b9;
+            --accent-red: #ff5e5e;
+            --bg-cream: #fdfaf6;
+        }
+        body {
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: var(--bg-cream);
+            border: 12px solid #000;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .screen {
+            flex: 1;
+            padding: 30px 20px;
+            overflow-y: auto;
+            text-align: center;
+        }
+        .logo-small { width: 60px; margin-bottom: 10px; }
+
+        h2 { font-size: 1.6rem; color: #333; margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 30px; }
+
+        /* ROLE SELECTION CARDS */
+        .role-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .role-card {
+            flex: 1;
+            background: #fff;
+            border: 3px solid #eee;
+            border-radius: 20px;
+            padding: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .role-card img { width: 60px; height: 60px; margin-bottom: 10px; }
+        .role-card span { display: block; font-weight: 800; font-size: 0.85rem; }
+
+        .role-card.selected-farmer { border-color: var(--farmer-green); background: #e9f6ee; }
+        .role-card.selected-consumer { border-color: var(--consumer-blue); background: #e9f2f6; }
+
+        /* FACE ID BIG BUTTON */
+        .face-login-zone {
+            background: #fff;
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 1px solid #eee;
+        }
+
+        .face-btn-large {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .face-btn-large img { width: 100px; margin-bottom: 10px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        .divider { display: flex; align-items: center; color: #aaa; font-size: 0.8rem; margin: 20px 0; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #ddd; margin: 0 10px; }
+
+        /* FORM STYLES */
+        .input-box {
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 15px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .login-submit {
+            width: 100%;
+            padding: 18px;
+            border-radius: 15px;
+            border: none;
+            background: var(--accent-red);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        /* FACE SCAN OVERLAY */
+        #face-modal {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .scan-ring {
+            width: 200px; height: 200px;
+            border: 4px solid var(--farmer-green);
+            border-radius: 50%;
+            position: relative;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .scan-bar {
+            width: 100%; height: 4px;
+            background: var(--farmer-green);
+            position: absolute;
+            top: 0;
+            animation: scan 2s infinite linear;
+            box-shadow: 0 0 20px var(--farmer-green);
+        }
+
+        @keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <div id="face-modal">
+        <div class="scan-ring">
+            <div class="scan-bar"></div>
+            <img src="/Images/facial.png" style="width: 70%; margin-top: 15%; opacity: 0.5;">
+        </div>
+        <h2 id="status-text" style="color: white;">Scanning Face...</h2>
+        <p>Position your face inside the circle</p>
+    </div>
+
+    <div class="screen">
+        <img src="/Images/logo.png" class="logo-small">
+        <h2>Welcome Back!</h2>
+        <p class="subtitle">Who are you today?</p>
+
+        <div class="role-container">
+            <div class="role-card selected-farmer" id="role-farmer" onclick="setRole('farmer')">
+                <img src="https://cdn-icons-png.flaticon.com/512/2010/2010141.png" alt="Farmer">
+                <span>I AM A<br>SUPPLIER</span>
+            </div>
+            <div class="role-card" id="role-consumer" onclick="setRole('consumer')">
+                <img src="https://cdn-icons-png.flaticon.com/512/3081/3081911.png" alt="Consumer">
+                <span>I AM A<br>SHOPPER</span>
+            </div>
+        </div>
+
+        <div class="face-login-zone">
+            <button class="face-btn-large" onclick="startFaceAuth()">
+                <img src="/Images/facial.png">
+                <p style="font-weight: 800; color: var(--farmer-green); margin: 0;">LOG IN WITH PHOTO</p>
+                <small style="color: #999;">Fast & Easy</small>
+            </button>
+        </div>
+
+        <div class="divider">OR USE PHONE NUMBER</div>
+
+        <form onsubmit="event.preventDefault(); completeLogin();">
+            <div class="input-box">
+                <span>📱</span>
+                <input type="text" placeholder="Phone Number" required>
+            </div>
+            <div class="input-box">
+                <span>🔑</span>
+                <input type="password" placeholder="Pin Code" required>
+            </div>
+            <button type="submit" class="login-submit">ENTER MARKET</button>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 0.8rem; color: #888;">
+            New here? <a href="#" style="color: var(--accent-red); font-weight: bold;">Create Account</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    let currentRole = 'farmer'; 
+
+    function setRole(role) {
+        currentRole = role;
+        const farmerBtn = document.getElementById('role-farmer');
+        const consumerBtn = document.getElementById('role-consumer');
+        const faceText = document.querySelector('.face-login-zone p');
+
+        if(role === 'farmer') {
+            farmerBtn.classList.add('selected-farmer');
+            consumerBtn.classList.remove('selected-consumer');
+            faceText.style.color = 'var(--farmer-green)';
+        } else {
+            consumerBtn.classList.add('selected-consumer');
+            farmerBtn.classList.remove('selected-farmer');
+            faceText.style.color = 'var(--consumer-blue)';
+        }
+    }
+
+    function startFaceAuth() {
+        const modal = document.getElementById('face-modal');
+        const status = document.getElementById('status-text');
+        modal.style.display = 'flex';
+
+        setTimeout(() => {
+            status.innerText = "Verified! ✅";
+            status.style.color = "#00ff00";
+        }, 1800);
+
+        setTimeout(() => {
+            completeLogin();
+        }, 2500);
+    }
+
+    function completeLogin() {
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userRole', currentRole);
+        
+        // Redirect logic
+        if (currentRole === 'farmer') {
+            window.location.href = '/Phone/index.html';
+        } else {
+            window.location.href = '/Phone/index.html';
+        }
+    }
+</script>
+
+</body>
+</html>

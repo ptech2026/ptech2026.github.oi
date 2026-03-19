@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Analytics</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #f4f6f6;
+      --card: #ffffff;
+      --text: #122027;
+      --muted: #5f6f76;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 18px 50px rgba(16,24,40,0.10);
+      --radius: 18px;
+
+      --green: #23c55e;
+      --blue: #2b8de5;
+      --gold: #f1c40f;
+
+      --nav-bg: #fbf7ef;
+      --nav-border: rgba(0,0,0,0.10);
+      --nav-active-bg: #dfeee2;
+      --nav-active-text: #0b6b2e;
+
+      --btn: #0b6b2e;
+      --btnText: #ffffff;
+      --btnSoft: #e8f3ec;
+
+      /* Offer section colors */
+      --offer-bg: #fbf7ef;
+      --offer-card-border: rgba(150,120,90,0.22);
+      --offer-title: #2a1e18;
+      --offer-green-soft: #e7f3ea;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 500px at 50% -10%, #ffffff 0%, var(--bg) 70%);
+      color: var(--text);
+    }
+
+    /* NAV */
+    .nav-wrap{
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav{
+      max-width: 1180px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 12px 16px;
+      gap: 12px;
+    }
+    .logo-container{display:flex;align-items:center;gap:10px}
+    .main-logo{height:42px;width:auto;display:block}
+    .nav-left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .nav a{
+      text-decoration:none;
+      color:#1e2b30;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      transition: background .15s ease;
+    }
+    .nav a:hover{ background: rgba(0,0,0,0.05); }
+    .nav a.active{
+      background: var(--nav-active-bg);
+      color: var(--nav-active-text);
+    }
+    .nav-right a{ font-weight: 800; }
+
+    /* PAGE */
+    .container{
+      max-width: 1180px;
+      margin: 18px auto;
+      padding: 0 16px 30px;
+    }
+
+    .page-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      margin: 14px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Smaller page title */
+    h1{
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: .2px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+    .btn{
+      border:none;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 900;
+      cursor: pointer;
+      background: var(--btn);
+      color: var(--btnText);
+      min-width: 110px;
+    }
+    .btn.soft{
+      background: var(--btnSoft);
+      color: var(--btn);
+      border: 1px solid rgba(11,107,46,0.18);
+    }
+    .btn:active{transform: scale(.99)}
+
+    /* PANELS */
+    .grid-2{
+      display:grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 8px;
+    }
+    .panel{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 18px 18px;
+    }
+    .panel-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Smaller panel titles */
+    .panel h2{
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: .2px;
+    }
+
+    /* Smaller hint text */
+    .hint{
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    /* Filter label + dropdown */
+    .filter{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    select{
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-weight: 900;
+      outline: none;
+      font-size: 14px;
+      min-width: 150px;
+    }
+
+    /* CHART */
+    .chart-wrap{
+      border-radius: 14px;
+      padding: 6px;
+      height: 420px;
+    }
+    canvas{ width:100% !important; height:100% !important; }
+
+    /* LIVE LIST */
+    .live-list{
+      margin-top: 6px;
+      border-radius: 14px;
+      height: 472px;
+      overflow:auto;
+      padding-right: 6px;
+    }
+    .live-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 16px 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      gap: 12px;
+    }
+    .live-item strong{
+      font-size: 16px;
+      font-weight: 950;
+    }
+    .qty{
+      color: var(--muted);
+      font-weight: 950;
+      margin-left: 10px;
+      font-size: 14px;
+    }
+
+    .pill{
+      font-size: 12px;
+      font-weight: 950;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #fff;
+      letter-spacing: .3px;
+      min-width: 88px;
+      text-align:center;
+    }
+    .pill.org{ background: var(--green); }
+    .pill.gap{ background: var(--blue); }
+    .pill.gi{ background: var(--gold); color: #1b1b1b; }
+
+    /* Accessibility focus */
+    a:focus, button:focus, select:focus {
+      outline: 3px solid rgba(43,141,229,0.35);
+      outline-offset: 2px;
+    }
+
+    /* ---------- WHAT WE OFFER SECTION ---------- */
+    .offer-wrap{
+      margin-top: 26px;
+      background: var(--offer-bg);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 22px;
+      padding: 26px 18px 30px;
+      box-shadow: 0 12px 32px rgba(16,24,40,0.06);
+    }
+    .offer-title{
+      text-align:center;
+      font-size: 38px;
+      font-weight: 950;
+      letter-spacing: .2px;
+      color: var(--offer-title);
+      margin: 6px 0 18px;
+    }
+
+    .offer-grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .offer-card{
+      background: #fff;
+      border: 2px solid var(--offer-card-border);
+      border-radius: 16px;
+      box-shadow: 0 10px 22px rgba(16,24,40,0.08);
+      padding: 24px 18px;
+      text-decoration:none;
+      color: inherit;
+      text-align:center;
+      min-height: 210px;
+      display:flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+    }
+    .offer-card:hover{
+      transform: translateY(-2px);
+      border-color: rgba(11,107,46,0.35);
+      box-shadow: 0 16px 34px rgba(11,107,46,0.10);
+    }
+
+    .offer-card.highlight{
+      border-color: rgba(11,107,46,0.35);
+    }
+
+    .offer-icon{
+      width: 92px;
+      height: 92px;
+      border-radius: 999px;
+      background: var(--offer-green-soft);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom: 16px;
+    }
+    .offer-icon svg{
+      width: 44px;
+      height: 44px;
+      stroke: var(--nav-active-text);
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .offer-card h3{
+      margin: 0;
+      font-size: 26px;
+      font-weight: 950;
+      color: var(--offer-title);
+    }
+    .offer-card p{
+      margin: 12px 0 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--muted);
+      max-width: 360px;
+    }
+
+    /* keep the “2 cards on second row” look */
+    .offer-placeholder{
+      display:block;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .grid-2{ grid-template-columns: 1fr; }
+      .chart-wrap{ height: 360px; }
+      .live-list{ height: 360px; }
+
+      .offer-title{ font-size: 30px; }
+      .offer-grid{ grid-template-columns: repeat(2, 1fr); }
+      .offer-placeholder{ display:none; }
+    }
+    @media (max-width: 640px){
+      .offer-grid{ grid-template-columns: 1fr; }
+      .offer-card{ min-height: 200px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- NAV -->
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-container">
+        <img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+      </div>
+
+      <div class="nav-left">
+        <a class="active" href="home.html">Home</a>
+        <a href="team.html">Our Team</a>
+        <a href="news.html">News</a>
+        <a href="stories.html">Stories</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="contact.html">Contact</a>
+      </div>
+
+      <div class="nav-right">
+        <a href="staff.html">Staff Area</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE -->
+  <div class="container">
+
+    <div class="page-head">
+      <div>
+        <h1>Market Analytics Dashboard</h1>
+      </div>
+
+      <div class="actions">
+        <button class="btn soft" id="helpBtn" type="button">Help</button>
+        <button class="btn" id="refreshBtn" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Chart -->
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Top Products</h2>
+            <div class="hint">Shows which items are selling the most.</div>
+          </div>
+          <div class="filter">
+            <span>Time:</span>
+            <select id="timeFilter">
+              <option value="7">Today / 7 Days</option>
+              <option value="30" selected>30 Days</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="topSellingChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Live Transactions -->
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Latest Sales</h2>
+            <div class="hint">New orders appear here automatically.</div>
+          </div>
+        </div>
+
+        <div id="liveList" class="live-list"></div>
+      </div>
+    </div>
+
+    <!-- ✅ WHAT WE OFFER (ADDED BELOW DASHBOARD) -->
+    <section class="offer-wrap" aria-label="What we offer">
+      <div class="offer-title">What We Offer</div>
+
+      <div class="offer-grid">
+
+        <!-- News -->
+        <a class="offer-card highlight" href="news.html">
+          <div class="offer-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M3 11v2a2 2 0 0 0 2 2h1l3 4h2l-2-4h4l7-4V7l-7-4H5a2 2 0 0 0-2 2v2"/>
+              <path d="M16 8v8"/>
+            </svg>
+          </div>
+          <h3>News</h3>
+          <p>Latest updates and important information</p>
+        </a>
+
+        <!-- Stories -->
+        <a class="offer-card" href="stories.html">
+          <div class="offer-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <h3>Stories</h3>
+          <p>Real stories from farmers like you</p>
+        </a>
+
+        <!-- Feedback -->
+        <a class="offer-card" href="feedback.html">
+          <div class="offer-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+            </svg>
+          </div>
+          <h3>Feedback</h3>
+          <p>Share your thoughts with us</p>
+        </a>
+
+        <!-- Contact -->
+        <a class="offer-card" href="contact.html">
+          <div class="offer-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2
+                       19.86 19.86 0 0 1-8.63-3.07
+                       19.5 19.5 0 0 1-6-6
+                       19.86 19.86 0 0 1-3.07-8.67
+                       A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72
+                       12.84 12.84 0 0 0 .7 2.81
+                       2 2 0 0 1-.45 2.11L8.09 9.91
+                       a16 16 0 0 0 6 6l1.27-1.27
+                       a2 2 0 0 1 2.11-.45
+                       12.84 12.84 0 0 0 2.81.7
+                       A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <h3>Contact</h3>
+          <p>Get in touch - we are here to help</p>
+        </a>
+
+        <!-- placeholder so desktop looks like your screenshot (3 + 2) -->
+        <div class="offer-placeholder"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // ---------- DEMO DATA ----------
+    const productCatalog = [
+      { name: "Beetroot", badge: "ORGANIC", type: "org", price: 45 },
+      { name: "Yak Cheese (Chugo)", badge: "GI", type: "gi", price: 280 },
+      { name: "Zucchini", badge: "GAP", type: "gap", price: 60 },
+      { name: "Walnuts", badge: "GAP", type: "gap", price: 220 },
+      { name: "King Chilli (Dalle)", badge: "ORGANIC", type: "org", price: 120 },
+      { name: "Broccoli", badge: "GAP", type: "gap", price: 90 },
+      { name: "Sweet Carrots", badge: "ORGANIC", type: "org", price: 70 },
+      { name: "Free-Range Eggs", badge: "ORGANIC", type: "org", price: 12 },
+    ];
+
+    // chart data per filter
+    const chartDatasets = {
+      all: {
+        labels: ["Beetroot", "Yak Cheese (Chugo)", "Zucchini", "Walnuts", "King Chilli (Dalle)", "Broccoli", "Sweet Carrots", "Free-Range Eggs"],
+        values: [65, 12, 28, 20, 5, 20, 14, 18],
+        badgeTypes: ["org","gi","gap","gap","org","gap","org","org"]
+      },
+      "7": {
+        labels: ["Beetroot", "Zucchini", "Walnuts", "Broccoli", "Sweet Carrots"],
+        values: [18, 10, 8, 6, 5],
+        badgeTypes: ["org","gap","gap","gap","org"]
+      },
+      "30": {
+        labels: ["Beetroot", "Yak Cheese (Chugo)", "Zucchini", "Walnuts", "Broccoli", "Sweet Carrots"],
+        values: [40, 10, 18, 14, 12, 9],
+        badgeTypes: ["org","gi","gap","gap","gap","org"]
+      }
+    };
+
+    // ---------- CHART ----------
+    const ctx = document.getElementById("topSellingChart");
+    let topChart;
+
+    function barColors(types){
+      return types.map(t => t === "org" ? "#23c55e" : t === "gi" ? "#f1c40f" : "#2b8de5");
+    }
+
+    function buildChart(filterKey){
+      const data = chartDatasets[filterKey];
+      const colors = barColors(data.badgeTypes);
+
+      if(topChart) topChart.destroy();
+
+      topChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: data.labels,
+          datasets: [{
+            data: data.values,
+            backgroundColor: colors,
+            borderRadius: 14,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: "rgba(0,0,0,0.08)" },
+              ticks: { precision: 0, font:{ size: 13, weight: 900 } }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font:{ size: 13, weight: 900 } }
+            }
+          }
+        }
+      });
+    }
+
+    buildChart(document.getElementById("timeFilter").value);
+
+    document.getElementById("timeFilter").addEventListener("change", (e) => {
+      buildChart(e.target.value);
+    });
+
+    // ---------- LIVE TRANSACTIONS ----------
+    const liveList = document.getElementById("liveList");
+
+    function pillClass(type){
+      if(type === "org") return "pill org";
+      if(type === "gi") return "pill gi";
+      return "pill gap";
+    }
+    function pillText(badge){
+      return badge === "GI" ? "GI" : badge;
+    }
+
+    function addLiveItem({name, qty, badge, type}){
+      const row = document.createElement("div");
+      row.className = "live-item";
+
+      const left = document.createElement("div");
+      left.innerHTML = `<strong>${name}</strong><span class="qty">x${qty}</span>`;
+
+      const right = document.createElement("div");
+      right.className = pillClass(type);
+      right.textContent = pillText(badge);
+
+      row.appendChild(left);
+      row.appendChild(right);
+      liveList.prepend(row);
+
+      const maxItems = 12;
+      while(liveList.children.length > maxItems){
+        liveList.removeChild(liveList.lastChild);
+      }
+    }
+
+    // seed items
+    const seed = [
+      { name:"Broccoli", qty:2, badge:"GAP", type:"gap"},
+      { name:"Zucchini", qty:1, badge:"GAP", type:"gap"},
+      { name:"Sweet Carrots", qty:1, badge:"ORGANIC", type:"org"},
+      { name:"Broccoli", qty:3, badge:"GAP", type:"gap"},
+      { name:"King Chilli (Dalle)", qty:2, badge:"ORGANIC", type:"org"},
+      { name:"Walnuts", qty:2, badge:"GAP", type:"gap"},
+    ];
+    seed.forEach(addLiveItem);
+
+    // ---------- SIMULATION ----------
+    function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function simulate(){
+      const item = productCatalog[randInt(0, productCatalog.length-1)];
+      const qty = randInt(1, 3);
+
+      addLiveItem({ name: item.name, qty, badge: item.badge, type: item.type });
+
+      const filter = document.getElementById("timeFilter").value;
+      const data = chartDatasets[filter];
+      const idx = data.labels.indexOf(item.name);
+      if(idx !== -1){
+        data.values[idx] += qty;
+        buildChart(filter);
+      }
+
+      setTimeout(simulate, randInt(1200, 2200));
+    }
+
+    setTimeout(simulate, 1400);
+
+    // ---------- ACTIONS ----------
+    document.getElementById("helpBtn").addEventListener("click", () => {
+      alert(
+        "How to read this page:\n\n" +
+        "1) Top Products shows what sells most.\n" +
+        "2) Time filter changes the period.\n" +
+        "3) Latest Sales shows new orders.\n\n" +
+        "Tip: If you want Dzongkha labels, tell me the text and I will update."
+      );
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      location.reload();
+    });
+  </script>
+</body>
+</html>

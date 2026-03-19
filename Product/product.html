@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product | DrukBasket</title>
+    <script src="/auth.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+         /* Header Logo Styling */
+        .live-logo-container { display: inline-flex; align-items: center; gap: 4px; }
+        /***.live-text-bold { color: #ff0000; font-family: 'Arial Black'; font-size: 1.2rem; }***/
+        .recording-circle { position: relative; width: 20px; height: 20px; animation: simplePulse 1.5s infinite; }
+        .inner-dot { width: 12px; height: 12px; background: #ff0000; border-radius: 50%; position: absolute; top: 4px; left: 4px; }
+        .outer-ring { width: 20px; height: 20px; border: 1px solid #ff0000; border-radius: 50%; }
+        @keyframes simplePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .product-container {
+            display: flex;
+            background: #fff;
+            padding: 40px 5%;
+            gap: 30px;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        /* Left: Image */
+        .product-image-box img {
+            width: 300px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Middle: Info */
+        .product-info { flex: 2; }
+        .product-info h1 { font-size: 1.8rem; margin-bottom: 20px; color: #333; }
+        .info-row { display: flex; margin-bottom: 15px; font-size: 1rem; }
+        .info-label { width: 150px; color: #777; }
+        .info-value { font-weight: bold; color: #333; }
+
+        /* Right: Pricing Card */
+        .purchase-card {
+            flex: 1;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+        }
+
+        .price-title { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        .price-display {
+            background: #f4f7f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Action Buttons */
+        .action-btns { display: flex; flex-direction: column; gap: 12px; }
+        .btn-buy {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-preorder {
+            background: #ff8787;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- NEW: Location Section Styles --- */
+        .common-location {
+            max-width: 1200px;
+            margin: 0 auto 50px auto;
+            padding: 30px 5%;
+            background: #fff;
+            border-radius: 12px;
+            display: none; /* Hidden until button is clicked */
+        }
+        .common-location h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            border-left: 5px solid #ff6b6b;
+            padding-left: 15px;
+        }
+        #location-iframe {
+            border-radius: 10px;
+            border: 1px solid #eee;
+            width: 100%;
+            height: 400px;
+        }
+        
+        /* --- Certificate on Map (Overlay Pins + Modal) --- */
+        .map-wrap {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        #location-iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: 10px;
+        }
+
+        /* Overlay layer sits on top of iframe */
+        .map-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none; /* allow map drag/zoom by default */
+        }
+
+        /* Farmer pin (clickable) */
+        .farmer-pin {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            pointer-events: auto;  /* re-enable click on the pin itself */
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Pin icon */
+        .farmer-pin .pin-dot {
+            width: 16px;
+            height: 16px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+            border: 2px solid #fff;
+        }
+        .farmer-pin .pin-tail {
+            width: 2px;
+            height: 12px;
+            background: #ff6b6b;
+            border-radius: 2px;
+        }
+
+        /* Certificate thumbnail attached to pin */
+        .farmer-pin .cert-thumb {
+            width: 70px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #fff;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+            background: #fff;
+        }
+        .farmer-pin .farmer-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #333;
+            background: rgba(255,255,255,0.9);
+            padding: 4px 8px;
+            border-radius: 999px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+        }
+
+        /* Modal */
+        .cert-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .cert-modal-content {
+            width: min(900px, 95vw);
+            max-height: 90vh;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cert-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cert-modal-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .cert-close {
+            background: #ff6b6b;
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .cert-modal-body {
+            padding: 16px;
+            overflow: auto;
+            background: #fafafa;
+        }
+
+        #cert-large {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="/Images/logo.png" alt="Drukbasket Logo" class="main-logo">
+        </div>
+        <nav>
+            <a href="/index.html">Marketplace</a>
+            <a href="/aboutUs.html">About Us</a>
+            <a href="/contactUs.html">Contact Us</a>
+        </nav>
+        <div class="user-actions">
+            <a href="/market-prices.html" style="text-decoration: none;">
+                <div class="live-logo-container">
+                    <span class="market-price">View Current Market Prices</span>
+                    <div class="recording-circle"><div class="inner-dot"></div><div class="outer-ring"></div></div>
+            </div>
+            </a>
+            <a href="Dzongkha/index.html" style="text-decoration: none;">EN</a>
+            
+            <div class="cart-container" style="position: relative; display: inline-block; cursor: pointer;" onclick="window.location.href='/Preorder/preorder.html'">
+                <span class="cart" style="font-size: 1.5rem;">🛒</span>
+                <span id="cart-count" class="cart-badge">0</span>
+            </div>
+
+            <span class="notification">🔔</span>
+            <a href="/login.html" class="login-btn-link">
+                <button class="login-btn">LOG IN</button>
+            </a>
+        </div>
+    </header>
+
+    <main class="product-container">
+        <div class="product-image-box">
+            <img id="dynamic-img" src="" alt="Product Image">
+        </div>
+
+        <div class="product-info">
+            <h1 id="dynamic-name">Loading...</h1>
+            <div class="info-row">
+                <span class="info-label">Category</span>
+                <span id="dynamic-badge" class="info-value">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Price</span>
+                <span id="dynamic-info-price" class="info-value">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Description</span>
+                <span class="info-value">
+                    Freshly sourced from local Bhutanese farms. These products are handled with care to ensure the highest quality reaches your doorstep. 
+                    <br><br>
+                    Supporting local farmers helps build a sustainable "Druk" economy.
+                </span>
+            </div>
+        </div>
+
+        <aside class="purchase-card">
+            <p class="price-title">Price (in Nu)</p>
+            <div id="dynamic-display-price" class="price-display">-</div>
+            <div class="action-btns">
+                <button class="btn-buy" id="add-to-cart-btn">ADD TO CART</button>
+                <button class="btn-preorder" onclick="window.location.href='/Preorder/preorder.html'">PRE-ORDER</button>
+                <button class="btn-preorder" id="view-location-btn" 
+                    data-map="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14210.638294970422!2d90.13451059999999!3d27.0251786!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3758b902e4d28437%3A0xe54955b79649539d!2sDamphu!5e0!3m2!1sen!2sbt!4v1700000000000!5m2!1sen!2sbt">
+                    VIEW LOCATION
+                </button>
+            </div>
+        </aside>
+    </main>
+
+    <section class="common-location" id="location-section">
+        <h2>Product Source Location</h2>
+
+        <div class="map-wrap" id="map-wrap">
+            <iframe id="location-iframe" src="" loading="lazy"></iframe>
+
+            <!-- Overlay pins -->
+            <div class="map-overlay" id="map-overlay"></div>
+        </div>
+    </section>
+    <!-- Certificate Modal -->
+    <div class="cert-modal" id="cert-modal">
+        <div class="cert-modal-content">
+            <div class="cert-modal-header">
+                <h3 id="cert-title">Certificate</h3>
+                <button class="cert-close" id="cert-close">Close ✖</button>
+            </div>
+            <div class="cert-modal-body">
+                <img id="cert-large" src="" alt="Certificate Large View">
+            </div>
+        </div>
+    </div>
+    <script>
+        // 1. EXTRACT DATA FROM URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const pData = {
+            name: urlParams.get('name') || "Unknown Product",
+            price: urlParams.get('price') || "0",
+            unit: urlParams.get('unit') || "unit",
+            img: urlParams.get('img') || "https://via.placeholder.com/400",
+            badge: urlParams.get('badge') || "Local Product"
+        };
+
+        // 2. INJECT DATA INTO PAGE
+        document.getElementById('dynamic-name').innerText = pData.name;
+        document.getElementById('dynamic-img').src = pData.img;
+        document.getElementById('dynamic-badge').innerText = pData.badge;
+        document.getElementById('dynamic-info-price').innerText = `Nu. ${pData.price} /${pData.unit}`;
+        document.getElementById('dynamic-display-price').innerText = `Nu. ${pData.price} /${pData.unit}`;
+        document.title = `DrukBasket | ${pData.name}`;
+
+        // 3. CART LOGIC
+        const cartBadge = document.getElementById('cart-count');
+        const cartBtn = document.getElementById('add-to-cart-btn');
+
+        function syncBadge() {
+            const cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            cartBadge.innerText = cart.length;
+            cartBadge.style.display = cart.length > 0 ? 'block' : 'none';
+        }
+        syncBadge();
+
+        cartBtn.addEventListener('click', function() {
+            let cart = JSON.parse(localStorage.getItem('drukCart')) || [];
+            cart.push({
+                name: pData.name,
+                price: pData.price,
+                img: pData.img,
+                qty: 1,
+                unit: pData.unit
+            });
+            localStorage.setItem('drukCart', JSON.stringify(cart));
+            syncBadge();
+
+            // Button Feedback
+            this.innerText = "ADDED TO CART ✅";
+            this.style.background = "#4CAF50";
+            setTimeout(() => {
+                this.innerText = "ADD TO CART";
+                this.style.background = "#ff6b6b";
+            }, 1500);
+        });
+
+        // 4. MAP LOGIC
+        document.getElementById('view-location-btn').addEventListener('click', function() {
+            const section = document.getElementById('location-section');
+            const iframe = document.getElementById('location-iframe');
+            
+            // Get the Damphu URL from the data-map attribute
+            const mapUrl = this.getAttribute('data-map');
+            
+            // Set the source and make the section visible
+            iframe.src = mapUrl;
+            section.style.display = 'block';
+            
+            // Smooth scroll to the map
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        });
+    </script>
+    <script>
+        /* --- Farmer pins + certificate attachments --- */
+        /* NOTE:
+        - top/left are % positions on the map container (overlay), not true lat/long.
+        - Replace certThumb/certLarge with your actual certificate images (jpg/png/pdf image).
+        */
+        const farmerLocations = [
+        {
+            farmerName: "Farmer A",
+            top: 55,   // % from top
+            left: 45,  // % from left
+            certThumb: "/Images/farmer1.png",
+            certLarge: "/Images/farmer1.png"
+        },
+        {
+            farmerName: "Farmer B",
+            top: 35,
+            left: 62,
+            certThumb: "/Images/farmer2.png",
+            certLarge: "/Images/farmer2.png"
+        }
+        ];
+
+        function renderFarmerPins() {
+        const overlay = document.getElementById("map-overlay");
+        overlay.innerHTML = "";
+
+        farmerLocations.forEach((f, idx) => {
+            const pin = document.createElement("div");
+            pin.className = "farmer-pin";
+            pin.style.top = f.top + "%";
+            pin.style.left = f.left + "%";
+            pin.setAttribute("data-index", idx);
+
+            pin.innerHTML = `
+            <img class="cert-thumb" src="${f.certThumb}" alt="Certificate thumbnail">
+            <div class="farmer-name">${f.farmerName}</div>
+            <div class="pin-tail"></div>
+            <div class="pin-dot"></div>
+            `;
+
+            pin.addEventListener("click", () => openCertificate(f));
+            overlay.appendChild(pin);
+        });
+        }
+
+        function openCertificate(farmer) {
+        const modal = document.getElementById("cert-modal");
+        document.getElementById("cert-title").innerText = `${farmer.farmerName} - Certificate`;
+        document.getElementById("cert-large").src = farmer.certLarge;
+        modal.style.display = "flex";
+        }
+
+        function closeCertificate() {
+        const modal = document.getElementById("cert-modal");
+        modal.style.display = "none";
+        document.getElementById("cert-large").src = "";
+        }
+
+        document.getElementById("cert-close").addEventListener("click", closeCertificate);
+        document.getElementById("cert-modal").addEventListener("click", (e) => {
+        if (e.target.id === "cert-modal") closeCertificate();
+        });
+
+        /* Your existing VIEW LOCATION logic (kept) */
+        document.getElementById('view-location-btn').addEventListener('click', function() {
+            const section = document.getElementById('location-section');
+            const iframe = document.getElementById('location-iframe');
+
+            const mapUrl = this.getAttribute('data-map');
+            iframe.src = mapUrl;
+            section.style.display = 'block';
+
+            // Render pins once map is visible
+            renderFarmerPins();
+
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        });
+    </script>
+
+</body>
+</html>

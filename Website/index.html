@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Analytics Dashboard</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #f4f6f6;
+      --card: #ffffff;
+      --text: #1f2a2e;
+      --muted: #6b7b83;
+      --border: rgba(0,0,0,0.06);
+      --shadow: 0 12px 30px rgba(16,24,40,0.08);
+      --radius: 14px;
+
+      --green: #2ecc71;
+      --blue: #3498db;
+      --gold: #f1c40f;
+      --dark: #2c3e50;
+
+      --nav-bg: #fbf7ef;
+      --nav-border: rgba(0,0,0,0.08);
+      --nav-active-bg: #dfeee2;
+      --nav-active-text: #0b6b2e;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* NAV */
+    .nav-wrap{
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav{
+      max-width: 1180px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 12px 18px;
+      gap: 16px;
+    }
+    .nav-left{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .brand{
+      font-weight:800;
+      letter-spacing: .2px;
+      margin-right: 8px;
+      color: #183028;
+    }
+    .nav a{
+      text-decoration:none;
+      color:#2a2a2a;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: background .15s ease;
+    }
+    .nav a:hover{ background: rgba(0,0,0,0.04); }
+    .nav a.active{
+      background: var(--nav-active-bg);
+      color: var(--nav-active-text);
+    }
+    .nav-right a{
+      opacity: .85;
+      font-weight: 700;
+    }
+
+    /* PAGE */
+    .container{
+      max-width: 1180px;
+      margin: 26px auto;
+      padding: 0 18px 30px;
+    }
+    .page-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    h1{
+      margin: 0;
+      font-size: 40px;
+      letter-spacing: .2px;
+    }
+    .live-indicator{
+      margin-top: 18px;
+      font-weight: 800;
+      color: #d10f0f;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .dot{
+      width: 7px;
+      height: 7px;
+      background:#d10f0f;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(209,15,15,.6);
+      animation: pulse 1.3s infinite;
+    }
+    @keyframes pulse{
+      0% { box-shadow: 0 0 0 0 rgba(209,15,15,.55); }
+      70% { box-shadow: 0 0 0 10px rgba(209,15,15,0); }
+      100% { box-shadow: 0 0 0 0 rgba(209,15,15,0); }
+    }
+
+    /* KPI GRID */
+    .kpi-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin: 18px 0 22px;
+    }
+    .kpi{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 18px;
+      position: relative;
+      overflow:hidden;
+      min-height: 112px;
+    }
+    .kpi::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width: 4px;
+      background: var(--green);
+    }
+    .kpi.blue::before{ background: var(--blue); }
+    .kpi.gold::before{ background: var(--gold); }
+    .kpi.dark::before{ background: var(--dark); }
+
+    .kpi .label{
+      color: #2d2d2d;
+      font-weight: 800;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .kpi .value{
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+    .kpi .value.small{
+      font-size: 38px;
+    }
+
+    /* PANELS */
+    .grid-2{
+      display:grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .panel{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 18px 18px;
+      min-height: 520px;
+    }
+    .panel-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .panel h2{
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: .2px;
+    }
+    .filter{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    select{
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    /* CHART AREA */
+    .chart-wrap{
+      border-radius: 12px;
+      padding: 4px 4px 0;
+    }
+
+    /* LIVE LIST */
+    .live-list{
+      margin-top: 6px;
+      border-radius: 12px;
+      height: 455px;
+      overflow:auto;
+      padding-right: 6px;
+    }
+    .live-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 14px 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      gap: 12px;
+    }
+    .live-item strong{
+      font-size: 16px;
+    }
+    .qty{
+      color: var(--muted);
+      font-weight: 800;
+      margin-left: 6px;
+      font-size: 13px;
+    }
+    .pill{
+      font-size: 12px;
+      font-weight: 900;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: #fff;
+      letter-spacing: .4px;
+      min-width: 72px;
+      text-align:center;
+    }
+    .pill.org{ background: var(--green); }
+    .pill.gap{ background: var(--blue); }
+    .pill.gi{ background: var(--gold); color: #1b1b1b; }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .kpi-grid{ grid-template-columns: repeat(2, 1fr); }
+      .grid-2{ grid-template-columns: 1fr; }
+      .panel{ min-height: auto; }
+      .live-list{ height: 360px; }
+      h1{ font-size: 32px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- NAV -->
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="nav-left">
+        <div class="brand">YourSite</div>
+        <a class="active" href="home.html">Home</a>
+        <a href="team.html">Our Team</a>
+        <a href="news.html">News</a>
+        <a href="stories.html">Stories</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="nav-right">
+        <a href="staff.html">Staff Area</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE -->
+  <div class="container">
+    <div class="page-head">
+      <h1>Market Analytics Dashboard</h1>
+      <div class="live-indicator" title="This is a front-end simulation">
+        <span class="dot"></span>
+        LIVE SIMULATION ACTIVE
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="label">Organic</div>
+        <div id="kpiOrganic" class="value">29</div>
+      </div>
+      <div class="kpi blue">
+        <div class="label">GAP</div>
+        <div id="kpiGAP" class="value">11</div>
+      </div>
+      <div class="kpi gold">
+        <div class="label">GI Tag</div>
+        <div id="kpiGI" class="value">8</div>
+      </div>
+      <div class="kpi dark">
+        <div class="label">Revenue</div>
+        <div id="kpiRevenue" class="value small">Nu. 6,200</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Chart -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Top Selling Products</h2>
+          <div class="filter">
+            <span>Filter:</span>
+            <select id="timeFilter">
+              <option value="all" selected>All Time</option>
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          <canvas id="topSellingChart" height="340"></canvas>
+        </div>
+      </div>
+
+      <!-- Live Transactions -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Live Transactions</h2>
+        </div>
+
+        <div id="liveList" class="live-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- DEMO DATA ----------
+    const productCatalog = [
+      { name: "Beetroot", badge: "ORGANIC", type: "org", price: 45 },
+      { name: "Yak Cheese (Chugo)", badge: "GI", type: "gi", price: 280 },
+      { name: "Zucchini", badge: "GAP", type: "gap", price: 60 },
+      { name: "Walnuts", badge: "GAP", type: "gap", price: 220 },
+      { name: "King Chilli (Dalle)", badge: "ORGANIC", type: "org", price: 120 },
+      { name: "Broccoli", badge: "GAP", type: "gap", price: 90 },
+      { name: "Sweet Carrots", badge: "ORGANIC", type: "org", price: 70 },
+      { name: "Free-Range Eggs", badge: "ORGANIC", type: "org", price: 12 },
+    ];
+
+    // Start values matching your screenshot vibe
+    const kpis = {
+      organic: 29,
+      gap: 11,
+      gi: 8,
+      revenue: 6200
+    };
+
+    // chart data per filter (you can replace with real API later)
+    const chartDatasets = {
+      all: {
+        labels: ["Beetroot", "Yak Cheese (Chugo)", "Zucchini", "Walnuts", "King Chilli (Dalle)", "Broccoli", "Sweet Carrots", "Free-Range Eggs"],
+        values: [25, 8, 6, 3, 2, 2, 1, 1],
+        badgeTypes: ["org","gi","gap","gap","org","gap","org","org"]
+      },
+      "7": {
+        labels: ["Beetroot", "Zucchini", "Yak Cheese (Chugo)", "Broccoli", "King Chilli (Dalle)"],
+        values: [9, 5, 3, 2, 1],
+        badgeTypes: ["org","gap","gi","gap","org"]
+      },
+      "30": {
+        labels: ["Beetroot", "Yak Cheese (Chugo)", "Zucchini", "Walnuts", "Broccoli", "Sweet Carrots"],
+        values: [18, 6, 5, 3, 2, 1],
+        badgeTypes: ["org","gi","gap","gap","gap","org"]
+      }
+    };
+
+    // ---------- KPI RENDER ----------
+    function renderKPIs(){
+      document.getElementById("kpiOrganic").textContent = kpis.organic;
+      document.getElementById("kpiGAP").textContent = kpis.gap;
+      document.getElementById("kpiGI").textContent = kpis.gi;
+      document.getElementById("kpiRevenue").textContent = "Nu. " + kpis.revenue.toLocaleString();
+    }
+    renderKPIs();
+
+    // ---------- CHART ----------
+    const ctx = document.getElementById("topSellingChart");
+    let topChart;
+
+    function barColors(types){
+      // match screenshot feel: green/org, gold/gi, blue/gap
+      return types.map(t => t === "org" ? "#2ecc71" : t === "gi" ? "#f1c40f" : "#3498db");
+    }
+
+    function buildChart(filterKey){
+      const data = chartDatasets[filterKey];
+      const colors = barColors(data.badgeTypes);
+
+      if(topChart) topChart.destroy();
+
+      topChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: "Units Sold",
+            data: data.values,
+            backgroundColor: colors,
+            borderRadius: 8,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: "y",
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: "rgba(0,0,0,0.08)" },
+              ticks: { precision: 0 }
+            },
+            y: {
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    buildChart("all");
+
+    document.getElementById("timeFilter").addEventListener("change", (e) => {
+      buildChart(e.target.value);
+    });
+
+    // ---------- LIVE TRANSACTIONS ----------
+    const liveList = document.getElementById("liveList");
+
+    function pillClass(type){
+      if(type === "org") return "pill org";
+      if(type === "gi") return "pill gi";
+      return "pill gap";
+    }
+
+    function pillText(badge){
+      if(badge === "GI") return "GI";
+      return badge; // ORGANIC / GAP
+    }
+
+    function addLiveItem({name, qty, badge, type}){
+      const row = document.createElement("div");
+      row.className = "live-item";
+
+      const left = document.createElement("div");
+      left.innerHTML = `<strong>${name}</strong><span class="qty">x${qty}</span>`;
+
+      const right = document.createElement("div");
+      right.className = pillClass(type);
+      right.textContent = pillText(badge);
+
+      row.appendChild(left);
+      row.appendChild(right);
+
+      liveList.prepend(row);
+
+      // keep list clean
+      const maxItems = 14;
+      while(liveList.children.length > maxItems){
+        liveList.removeChild(liveList.lastChild);
+      }
+    }
+
+    // seed like screenshot
+    const seed = [
+      { name:"Free-Range Eggs", qty:1, badge:"ORGANIC", type:"org"},
+      { name:"Sweet Carrots", qty:1, badge:"ORGANIC", type:"org"},
+      { name:"Zucchini", qty:1, badge:"GAP", type:"gap"},
+      { name:"Broccoli", qty:1, badge:"GAP", type:"gap"},
+      { name:"Broccoli", qty:1, badge:"GAP", type:"gap"},
+      { name:"Beetroot", qty:25, badge:"ORGANIC", type:"org"},
+      { name:"King Chilli (Dalle)", qty:1, badge:"ORGANIC", type:"org"},
+      { name:"Yak Cheese (Chugo)", qty:6, badge:"GI", type:"gi"},
+      { name:"Zucchini", qty:1, badge:"GAP", type:"gap"},
+      { name:"King Chilli (Dalle)", qty:1, badge:"ORGANIC", type:"org"},
+    ];
+    seed.forEach(addLiveItem);
+
+    // ---------- LIVE SIMULATION ----------
+    function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function simulate(){
+      const item = productCatalog[randInt(0, productCatalog.length-1)];
+      const qty = item.name === "Beetroot" ? randInt(1, 6) : randInt(1, 3);
+
+      addLiveItem({
+        name: item.name,
+        qty,
+        badge: item.badge,
+        type: item.type
+      });
+
+      // update KPIs
+      if(item.type === "org") kpis.organic += 1;
+      if(item.type === "gap") kpis.gap += 1;
+      if(item.type === "gi") kpis.gi += 1;
+
+      kpis.revenue += (item.price * qty);
+      renderKPIs();
+
+      // optionally nudge chart "All Time" only (lightweight demo behavior)
+      const filter = document.getElementById("timeFilter").value;
+      const data = chartDatasets[filter];
+      const idx = data.labels.indexOf(item.name);
+      if(idx !== -1){
+        data.values[idx] += qty;
+        buildChart(filter);
+      }
+
+      const nextInMs = randInt(900, 1800);
+      setTimeout(simulate, nextInMs);
+    }
+
+    setTimeout(simulate, 1200);
+  </script>
+</body>
+</html>
